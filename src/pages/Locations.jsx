@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, Legend,
 } from 'recharts'
 import Layout from '../components/Layout'
-import { locationsApi, staffApi, managerApi } from '../services/api'
+import { locationsApi, staffApi, managerApi, unwrap, unwrapList } from '../services/api'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
 
 /* ── Responsive hook ─────────────────────────────────────────────── */
@@ -160,7 +160,7 @@ function StaffModal({ location, onClose }) {
     setLoading(true)
     try {
       const r = await staffApi.list(location.id)
-      setStaffList(r.data)
+      setStaffList(unwrapList(r))
     } catch { }
     setLoading(false)
   }
@@ -829,7 +829,7 @@ export default function Locations() {
     // Each fetch is independent — one failure never hides another section
     try {
       const locRes = await locationsApi.list()
-      setLocations(locRes.data)
+      setLocations(unwrapList(locRes))
       loadLocations()
     } catch (e) {
       if (ctxLocations?.length > 0) setLocations(ctxLocations)
@@ -837,12 +837,13 @@ export default function Locations() {
     }
     try {
       const anaRes = await locationsApi.analytics(analyticsDays)
-      setAnalytics(anaRes.data.locations || [])
-      setAnalyticsTotal(anaRes.data.totals || null)
+      const data = unwrap(anaRes) || {}
+      setAnalytics(data.locations || data || [])
+      setAnalyticsTotal(data.totals || null)
     } catch { /* non-fatal */ }
     try {
       const tsRes = await managerApi.timeseries(analyticsDays)
-      setTimeseries(tsRes.data || {})
+      setTimeseries(unwrap(tsRes) || {})
     } catch { /* non-fatal */ }
     setLoading(false)
   }
@@ -854,7 +855,7 @@ export default function Locations() {
       await locationsApi.update(editingLocation.id, form)
     } else {
       const res = await locationsApi.create(form)
-      const newLocationId = res.data.id
+      const newLocationId = (unwrap(res) || {}).id
 
       if (managerData?.mode === 'create') {
         // Brand new manager account for this location
@@ -877,7 +878,7 @@ export default function Locations() {
         // Link an existing staff member from another location to this one
         try {
           const allStaff = await staffApi.list()
-          const match = (allStaff.data || []).find(s => s.email.toLowerCase() === managerData.email.toLowerCase())
+          const match = unwrapList(allStaff).find(s => s.email.toLowerCase() === managerData.email.toLowerCase())
           if (!match) {
             throw Object.assign(
               new Error(`No staff member found with email "${managerData.email}". Check the email or create a new account instead.`),

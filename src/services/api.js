@@ -5,22 +5,47 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach JWT token to every request
+// Attach the current JWT to every request.
+// Reads localStorage fresh each time so a mid-session login/refresh is picked up
+// without needing to recreate the axios instance.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
+    config.headers = config.headers ?? {}
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
 
-// Redirect to login on 401 — but NOT for auth endpoints (wrong password shouldn't redirect)
+// Force-logout only when the token itself is absent or expired.
+// A 401 for any other reason (e.g. missing permissions on an analytics route)
+// should NOT kick the user out — the calling page handles it locally.
+const TOKEN_ERRORS = new Set([
+  'Not authenticated',
+  'Invalid or expired token',
+  'Token missing subject claim',
+])
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     const url = err.config?.url || ''
+    const responseUrl = err.request?.responseURL || ''
     const isAuthEndpoint = url.startsWith('/auth/')
-    if (err.response?.status === 401 && !isAuthEndpoint) {
+    const status = err.response?.status
+    const detail = err.response?.data?.detail
+
+    // detail can be a string (FastAPI HTTPException) or an array (Pydantic validation)
+    const detailText = typeof detail === 'string' ? detail : ''
+    const isTokenError = TOKEN_ERRORS.has(detailText)
+
+    // Only force-logout if we actually sent the token (request went through our proxy).
+    // If the final response URL is on a different port (e.g. backend followed a redirect
+    // that the browser sent directly to :8003), the auth header was stripped by the
+    // browser — this is NOT a real auth failure.
+    const wentThroughProxy = !responseUrl || responseUrl.includes(window.location.host)
+
+    if (status === 401 && !isAuthEndpoint && isTokenError && wentThroughProxy) {
       localStorage.removeItem('token')
       localStorage.removeItem('owner')
       window.location.href = '/login'
@@ -32,7 +57,7 @@ api.interceptors.response.use(
 // Auth
 export const authApi = {
   // 2-step signup: request sends OTP to email+phone, verify creates the account
-  signupRequest: (data) => api.post('/auth/signup/request', data),
+  signupRequest: (data) => api.post('/auth/signup', data),
   signupVerify: (data) => api.post('/auth/signup/verify', data),
   // Legacy single-step signup (kept for internal use / admin scripts)
   signup: (data) => api.post('/auth/signup', data),
@@ -48,8 +73,8 @@ export const authApi = {
 
 // Menu
 export const menuApi = {
-  list: () => api.get('/menu/'),
-  create: (data) => api.post('/menu/', data),
+  list: () => api.get('/menu'),
+  create: (data) => api.post('/menu', data),
   update: (id, data) => api.put(`/menu/${id}`, data),
   delete: (id) => api.delete(`/menu/${id}`),
   seed: () => api.post('/menu/seed'),
@@ -57,9 +82,9 @@ export const menuApi = {
 
 // Orders
 export const ordersApi = {
-  list: (params = {}) => api.get('/orders/', { params }),
+  list: (params = {}) => api.get('/orders', { params }),
   get: (id) => api.get(`/orders/${id}`),
-  create: (data) => api.post('/orders/', data),
+  create: (data) => api.post('/orders', data),
   updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
   cancel: (id) => api.delete(`/orders/${id}`),
 }
@@ -68,7 +93,9 @@ export const ordersApi = {
 export const knowledgeApi = {
   upload: (formData) =>
     api.post('/knowledge/upload', formData, {
-      headers: { 'Content-Type': null },  // null removes the default 'application/json' in axios v1, letting browser set multipart boundary
+      // Remove Content-Type so the browser sets the multipart boundary automatically.
+      // Authorization is added by the request interceptor after this merge.
+      headers: { 'Content-Type': undefined },
       timeout: 60000,
     }),
   listDocuments: () => api.get('/knowledge/documents'),
@@ -86,8 +113,8 @@ export const dashboardApi = {
 
 // Restaurant
 export const restaurantApi = {
-  get: () => api.get('/restaurant/'),
-  update: (data) => api.put('/restaurant/', data),
+  get: () => api.get('/restaurant'),
+  update: (data) => api.put('/restaurant', data),
 }
 
 // Subscription
@@ -103,8 +130,8 @@ export const subscriptionApi = {
 
 // Paid extras / addons for POS orders
 export const addonsApi = {
-  list: () => api.get('/addons/'),
-  create: (data) => api.post('/addons/', data),
+  list: () => api.get('/addons'),
+  create: (data) => api.post('/addons', data),
   update: (id, data) => api.put(`/addons/${id}`, data),
   delete: (id) => api.delete(`/addons/${id}`),
   seedDefaults: () => api.post('/addons/seed'),
@@ -112,8 +139,8 @@ export const addonsApi = {
 
 // Locations (owner-only)
 export const locationsApi = {
-  list: () => api.get('/locations/'),
-  create: (data) => api.post('/locations/', data),
+  list: () => api.get('/locations'),
+  create: (data) => api.post('/locations', data),
   update: (id, data) => api.put(`/locations/${id}`, data),
   delete: (id) => api.delete(`/locations/${id}`),
   analytics: (days = 30) => api.get('/locations/analytics/overview', { params: { days } }),
@@ -123,8 +150,8 @@ export const locationsApi = {
 
 // Staff management (owner-only)
 export const staffApi = {
-  list: (restaurantId) => api.get('/staff/', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
-  create: (data) => api.post('/staff/', data),
+  list: (restaurantId) => api.get('/staff', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
+  create: (data) => api.post('/staff', data),
   update: (id, data) => api.put(`/staff/${id}`, data),
   delete: (id) => api.delete(`/staff/${id}`),
   staffLogin: (email, password) => api.post('/auth/staff/login', { email, password }),
@@ -147,6 +174,16 @@ export const managerApi = {
   refreshRatings: () => api.post('/manager/analytics/ratings/refresh'),
   getAssignments:    (staffId) => api.get(`/staff/${staffId}/assignments`),
   updateAssignments: (staffId, restaurantIds) => api.put(`/staff/${staffId}/assignments`, { restaurant_ids: restaurantIds }),
+}
+
+// Unwrap helpers — backend routes return either a raw value OR {success, message, data}.
+// unwrap() returns the inner payload; unwrapList() guarantees an array.
+export const unwrap = (res) => (res?.data && Object.prototype.hasOwnProperty.call(res.data, 'data'))
+  ? res.data.data
+  : res?.data
+export const unwrapList = (res) => {
+  const v = unwrap(res)
+  return Array.isArray(v) ? v : []
 }
 
 export default api

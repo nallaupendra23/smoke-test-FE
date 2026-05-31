@@ -35,7 +35,7 @@ export function LocationProvider({ children }) {
     if (!isOwnerSession()) return
     setLoadingLocations(true)
     try {
-      const res = await api.get('/locations/')
+      const res = await api.get('/locations')
       setLocations(res.data)
 
       // If stored active location still valid, keep it; otherwise pick first

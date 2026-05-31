@@ -6,9 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:8002',
-      '/voice': 'http://localhost:8002',
-      '/payments': 'http://localhost:8002',
+      '/api/auth': 'http://localhost:8000',
+      '/api/restaurant': 'http://localhost:8000',
+      '/api': 'http://localhost:8003',
     },
   },
 })

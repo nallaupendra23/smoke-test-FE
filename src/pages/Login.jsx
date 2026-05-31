@@ -23,6 +23,12 @@ export default function Login() {
   const { loginRequest, login }     = useAuth()
   const navigate                    = useNavigate()
 
+  const apiErr = (err, fallback) => {
+    const d = err.response?.data?.detail
+    if (Array.isArray(d)) return d.map(e => e.msg).join(' · ')
+    return d || fallback
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault(); setError(''); setLoading(true)
     try {
@@ -30,7 +36,7 @@ export default function Login() {
       if (res.access_token) { navigate('/dashboard'); return }
       setDevOtp(res.otp || ''); setMode('otp')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password.')
+      setError(apiErr(err, 'Invalid email or password.'))
     } finally { setLoading(false) }
   }
 
@@ -39,7 +45,7 @@ export default function Login() {
     try {
       await login(email, otpCode); navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid or expired verification code.')
+      setError(apiErr(err, 'Invalid or expired verification code.'))
     } finally { setLoading(false) }
   }
 

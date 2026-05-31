@@ -5,7 +5,7 @@ import {
   Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
 import Layout from '../components/Layout'
-import { managerApi, locationsApi, staffApi } from '../services/api'
+import { managerApi, locationsApi, staffApi, unwrap, unwrapList } from '../services/api'
 
 /* ── Constants ──────────────────────────────────────────────────────── */
 const PERIODS = [
@@ -573,14 +573,14 @@ function AssignmentPanel({ allLocations, onSave }) {
   const load = useCallback(async () => {
     try {
       const res = await staffApi.list()
-      const managers = res.data.filter(s => s.role === 'manager')
+      const managers = unwrapList(res).filter(s => s.role === 'manager')
       setStaff(managers)
 
       const assignMap = {}
       await Promise.all(managers.map(async (m) => {
         try {
           const a = await managerApi.getAssignments(m.id)
-          assignMap[m.id] = a.data.restaurant_ids || []
+          assignMap[m.id] = (unwrap(a) || {}).restaurant_ids || []
         } catch { assignMap[m.id] = [] }
       }))
       setAssignments(assignMap)
@@ -723,10 +723,10 @@ export default function ManagerDashboard() {
         managerApi.expenses(d),
         locationsApi.list(),
       ])
-      setOverview(ovRes.data)
-      setTimeseries(tsRes.data)
-      setExpenses(expRes.data)
-      setAllLocations(locRes.data)
+      setOverview(unwrap(ovRes))
+      setTimeseries(unwrap(tsRes))
+      setExpenses(unwrap(expRes))
+      setAllLocations(unwrapList(locRes))
     } catch (e) {
       console.error('Manager analytics load failed', e)
     } finally {
@@ -740,8 +740,9 @@ export default function ManagerDashboard() {
     setRefreshingRatings(true)
     try {
       const res = await managerApi.refreshRatings()
-      setRatingsStatus(res.data.status)
-      if (res.data.status === 'ok') await load(days)
+      const data = unwrap(res) || {}
+      setRatingsStatus(data.status)
+      if (data.status === 'ok') await load(days)
     } catch (e) {
       console.error('Ratings sync failed', e)
     } finally {

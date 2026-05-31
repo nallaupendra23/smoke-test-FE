@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Layout from '../components/Layout'
-import { menuApi, knowledgeApi } from '../services/api'
+import { menuApi, knowledgeApi, unwrapList } from '../services/api'
 import { PlusIcon, SearchIcon, SpinnerIcon, TrashIcon, CheckIcon, XIcon } from '../components/Icons'
 
 const EMPTY_FORM = { category: '', name: '', description: '', price: '', available: true }
@@ -444,7 +444,7 @@ export default function MenuManager() {
   const load = async () => {
     try {
       const res = await menuApi.list()
-      setItems(res.data)
+      setItems(unwrapList(res))
     } finally {
       setLoading(false)
     }

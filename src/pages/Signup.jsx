@@ -23,6 +23,12 @@ export default function Signup() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
+  const apiErr = (err, fallback) => {
+    const d = err.response?.data?.detail
+    if (Array.isArray(d)) return d.map(e => e.msg).join(' · ')
+    return d || fallback
+  }
+
   /* ── Step 1: validate + send OTP ── */
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,7 +40,7 @@ export default function Signup() {
       setOtpMessage(res.message || `Verification code sent to ${form.email}`)
       setMode('otp')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Signup failed. Please try again.')
+      setError(apiErr(err, 'Signup failed. Please try again.'))
     } finally { setLoading(false) }
   }
 
@@ -47,7 +53,7 @@ export default function Signup() {
       await signupVerify(form.email, otpCode)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid or expired verification code.')
+      setError(apiErr(err, 'Invalid or expired verification code.'))
     } finally { setLoading(false) }
   }
 

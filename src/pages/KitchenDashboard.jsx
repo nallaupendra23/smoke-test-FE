@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import OrderCard from '../components/OrderCard'
-import { dashboardApi, menuApi, ordersApi } from '../services/api'
+import { dashboardApi, menuApi, ordersApi, unwrapList } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { printKitchenTicket } from '../utils/printTicket'
 import {
@@ -121,7 +121,7 @@ function WalkInModal({ onClose, onSuccess }) {
     if (menuItems.length === 0) {
       setLoadingMenu(true)
       menuApi.list()
-        .then(res => setMenuItems(res.data || []))
+        .then(res => setMenuItems(unwrapList(res)))
         .catch(() => {})
         .finally(() => setLoadingMenu(false))
     }
@@ -703,7 +703,7 @@ export default function KitchenDashboard() {
     try {
       const params = { days: ordersPeriod }
       const res = await ordersApi.list(params)
-      setAllOrders(res.data)
+      setAllOrders(unwrapList(res))
     } catch (e) { console.error(e) }
     finally { setOrdersLoading(false); setOrdersRefreshing(false) }
   }, [ordersPeriod])

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import { KnowledgeIcon } from '../components/Icons'
-import { knowledgeApi } from '../services/api'
+import { knowledgeApi, unwrap, unwrapList } from '../services/api'
 
 const DOC_TYPES = ['menu', 'allergy', 'policy', 'faq', 'general']
 const DOC_TYPE_LABELS = {
@@ -91,7 +91,7 @@ export default function DocumentUpload() {
 
   const loadDocuments = async () => {
     const res = await knowledgeApi.listDocuments()
-    setDocuments(res.data)
+    setDocuments(unwrapList(res))
   }
 
   useEffect(() => { loadDocuments() }, [])
@@ -153,11 +153,12 @@ export default function DocumentUpload() {
     setSyncing(true)
     try {
       const res = await knowledgeApi.syncMenu()
-      const { inserted } = res.data
+      const data = unwrap(res) || {}
+      const inserted = data.inserted ?? 0
       if (inserted > 0) {
         setMessage({ text: `Menu re-extracted! ${inserted} items added to your menu.`, type: 'success', showMenuLink: true })
       } else {
-        setMessage({ text: 'Re-extraction ran but found 0 items. Check that the file actually contains menu text.', type: 'warning', showMenuLink: false })
+        setMessage({ text: data.message || 'No new items found. All items may already be in the menu.', type: 'warning', showMenuLink: false })
       }
     } catch (err) {
       setMessage({ text: `Re-extraction failed: ${err.response?.data?.detail || 'Unknown error'}`, type: 'error' })

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import { OrdersIcon } from '../components/Icons'
-import { ordersApi } from '../services/api'
+import { ordersApi, unwrapList } from '../services/api'
 
 /* ─── STATUS CONFIG ─────────────────────────────────────────────────────────── */
 const STATUS_CONFIG = {
@@ -872,7 +872,7 @@ export default function OrderHistory() {
       if (dateFilter) params.order_date = dateFilter
       else if (periodDays) params.days = periodDays
       const res = await ordersApi.list(params)
-      setOrders(res.data)
+      setOrders(unwrapList(res))
     } catch (err) {
       console.error('Failed to load orders:', err)
     } finally {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Layout from '../components/Layout'
-import { menuApi, ordersApi, addonsApi, restaurantApi } from '../services/api'
+import { menuApi, ordersApi, addonsApi, restaurantApi, unwrap, unwrapList } from '../services/api'
 import { SpinnerIcon, XIcon, CheckIcon, SearchIcon, PlusIcon, TrashIcon } from '../components/Icons'
 import { haversineKm, geocodeAddress, searchAddresses } from '../hooks/useGoogleMaps'
 
@@ -1548,31 +1548,33 @@ export default function POSOrder() {
 
   const loadMenu = () =>
     menuApi.list()
-      .then(r => setMenuItems(r.data))
+      .then(r => setMenuItems(unwrapList(r)))
       .catch(() => {})
       .finally(() => setLoading(false))
 
   const loadAddons = () =>
     addonsApi.list()
-      .then(r => setAddons(r.data))
+      .then(r => setAddons(unwrapList(r)))
       .catch(() => {})
 
   // On mount: load menu + addons + restaurant settings
   useEffect(() => {
     loadMenu()
     addonsApi.list().then(r => {
-      setAddons(r.data)
-      if (r.data.length === 0 && !seedingRef.current) {
+      const list = unwrapList(r)
+      setAddons(list)
+      if (list.length === 0 && !seedingRef.current) {
         seedingRef.current = true
         addonsApi.seedDefaults()
-          .then(() => addonsApi.list().then(r2 => setAddons(r2.data)))
+          .then(() => addonsApi.list().then(r2 => setAddons(unwrapList(r2))))
           .catch(() => {})
       }
     }).catch(() => {})
     restaurantApi.get().then(r => {
-      setRestaurantRadius(r.data.delivery_radius_miles ?? 5)
-      setRestaurantDeliveryFee(r.data.delivery_fee ?? 0)
-      if (r.data.address) setRestaurantAddressStr(r.data.address)
+      const data = unwrap(r) || {}
+      setRestaurantRadius(data.delivery_radius_miles ?? 5)
+      setRestaurantDeliveryFee(data.delivery_fee ?? 0)
+      if (data.address) setRestaurantAddressStr(data.address)
     }).catch(() => {})
   }, [])
 
