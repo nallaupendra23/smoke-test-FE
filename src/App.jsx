@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { LocationProvider } from './context/LocationContext'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ResetPassword from './pages/ResetPassword'
 import KitchenDashboard from './pages/KitchenDashboard'
 import MenuManager from './pages/MenuManager'
 import DocumentUpload from './pages/DocumentUpload'
@@ -32,6 +33,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><KitchenDashboard /></ProtectedRoute>} />
       <Route path="/menu" element={<ProtectedRoute><MenuManager /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute><AgentSettings /></ProtectedRoute>} />

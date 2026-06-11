@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SpinnerIcon } from '../components/Icons'
+import { authApi } from '../services/api'
 import signupBg from '../assets/signup-bg-robot-restaurant.png'
 
 const field =
@@ -50,9 +51,13 @@ export default function Login() {
   }
 
   const handleForgot = async (e) => {
-    e.preventDefault(); setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
-    setForgotSent(true); setLoading(false)
+    e.preventDefault(); setError(''); setLoading(true)
+    try {
+      await authApi.forgotPassword(email)
+      setForgotSent(true)
+    } catch (err) {
+      setError(apiErr(err, 'Something went wrong. Please try again.'))
+    } finally { setLoading(false) }
   }
 
   return (

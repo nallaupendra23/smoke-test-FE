@@ -69,6 +69,8 @@ export const authApi = {
   updateEmail: (data) => api.patch('/auth/email', data),
   updatePhone: (data) => api.patch('/auth/phone', data),
   updatePassword: (data) => api.patch('/auth/password', data),
+  forgotPassword: (email) => api.post('/auth/password/forgot', { email }),
+  resetPassword: (token, new_password) => api.post('/auth/password/reset', { token, new_password }),
 }
 
 // Menu
