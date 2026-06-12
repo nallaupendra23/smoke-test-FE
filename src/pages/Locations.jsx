@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, Legend,
 } from 'recharts'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 import { locationsApi, staffApi, managerApi, unwrap, unwrapList } from '../services/api'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
 
@@ -21,14 +22,15 @@ function useWindowWidth() {
 }
 
 /* ── Icons ────────────────────────────────────────────────────────── */
-const PlusIcon = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-const EditIcon = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-const TrashIcon = ({ s = 13 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-const UserIcon = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-const SpinnerIcon = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-const MapPinIcon = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-const ChartIcon = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-const XIcon = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+const iconSize = (s, size) => size || s
+const PlusIcon = ({ s = 15, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={style} className={className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+const EditIcon = ({ s = 14, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={style} className={className}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+const TrashIcon = ({ s = 13, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={style} className={className}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+const UserIcon = ({ s = 14, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={style} className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+const SpinnerIcon = ({ s = 16, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={style} className={`animate-spin ${className}`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+const MapPinIcon = ({ s = 14, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={style} className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+const ChartIcon = ({ s = 14, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={style} className={className}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+const XIcon = ({ s = 14, size, style, className = '' }) => <svg width={iconSize(s, size)} height={iconSize(s, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={style} className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 
 /* ── Stat card ────────────────────────────────────────────────────── */
 function StatCard({ label, value, sub, accent }) {
@@ -45,7 +47,7 @@ function StatCard({ label, value, sub, accent }) {
 function ManagerChips({ managers }) {
   if (!managers || managers.length === 0) {
     return (
-      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-3)', border: '1px dashed rgba(255,255,255,0.1)' }}>
+      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--text-3)', border: '1px dashed var(--border)' }}>
         No manager assigned
       </span>
     )
@@ -57,7 +59,7 @@ function ManagerChips({ managers }) {
           key={m.id}
           title={m.email}
           className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ background: 'rgba(170,48,26,0.12)', color: '#ffb4a5', border: '1px solid rgba(170,48,26,0.2)' }}
+          style={{ background: 'var(--page-accent-light)', color: 'var(--page-accent)', border: '1px solid var(--page-accent-ring)' }}
         >
           <span style={{ fontSize: 10, opacity: 0.7 }}>👤</span>
           {m.name}
@@ -74,8 +76,8 @@ function LocationRow({ loc, analytics, onEdit, onDelete, onManageStaff }) {
     <div className="card mb-3" style={{ padding: 0, overflow: 'hidden' }}>
       <div className="flex items-start gap-4 p-4">
         {/* Pin */}
-        <div className="flex-shrink-0 flex items-center justify-center rounded-xl" style={{ width: 40, height: 40, background: loc.is_active ? 'rgba(170,48,26,0.12)' : 'rgba(255,255,255,0.05)' }}>
-          <MapPinIcon s={18} style={{ color: loc.is_active ? '#cb4830' : 'var(--text-3)' }} />
+        <div className="flex-shrink-0 flex items-center justify-center rounded-xl" style={{ width: 40, height: 40, background: loc.is_active ? 'var(--page-accent-light)' : 'var(--surface-2)' }}>
+          <MapPinIcon s={18} style={{ color: loc.is_active ? 'var(--page-accent)' : 'var(--text-3)' }} />
         </div>
 
         {/* Info */}
@@ -199,7 +201,7 @@ function StaffModal({ location, onClose }) {
 
   return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', padding: 20 }}>
-      <div className="rounded-2xl w-full max-w-lg" style={{ background: 'var(--card)', border: '1px solid var(--border)', maxHeight: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}>
+      <div className="rounded-2xl w-full max-w-lg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', maxHeight: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-xl)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
           <div>
@@ -222,7 +224,7 @@ function StaffModal({ location, onClose }) {
             <div className="space-y-2 mb-4">
               {staffList.map(s => (
                 <div key={s.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-center justify-center rounded-lg text-xs font-bold flex-shrink-0" style={{ width: 32, height: 32, background: s.role === 'manager' ? 'rgba(170,48,26,0.15)' : 'rgba(255,255,255,0.07)', color: s.role === 'manager' ? '#ffb4a5' : 'var(--text-2)' }}>
+                  <div className="flex items-center justify-center rounded-lg text-xs font-bold flex-shrink-0" style={{ width: 32, height: 32, background: s.role === 'manager' ? 'var(--page-accent-light)' : 'var(--surface-2)', color: s.role === 'manager' ? 'var(--page-accent)' : 'var(--text-2)' }}>
                     {s.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -230,7 +232,7 @@ function StaffModal({ location, onClose }) {
                     <div className="text-xs truncate" style={{ color: 'var(--text-3)' }}>{s.email}</div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium capitalize" style={{ background: s.role === 'manager' ? 'rgba(170,48,26,0.12)' : 'rgba(255,255,255,0.06)', color: s.role === 'manager' ? '#ffb4a5' : 'var(--text-2)' }}>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium capitalize" style={{ background: s.role === 'manager' ? 'var(--page-accent-light)' : 'var(--surface-2)', color: s.role === 'manager' ? 'var(--page-accent)' : 'var(--text-2)' }}>
                       {s.role}
                     </span>
                     {s.can_view_all_locations && (
@@ -319,10 +321,10 @@ function SegControl({ options, value, onChange }) {
             fontSize: 12,
             fontWeight: 600,
             background: value === o.value
-              ? 'linear-gradient(135deg,#aa301a,#cb4830)'
+              ? 'linear-gradient(135deg,#3b8ae3,#1d6fcc)'
               : 'transparent',
             color: value === o.value ? '#fff' : 'rgba(255,255,255,0.38)',
-            boxShadow: value === o.value ? '0 2px 8px rgba(170,48,26,0.35)' : 'none',
+            boxShadow: value === o.value ? '0 2px 8px rgba(29,111,204,0.26)' : 'none',
             letterSpacing: '-0.01em',
           }}
         >
@@ -699,7 +701,7 @@ const PERIOD_OPTIONS = [
   { value: 365, label: '12m' },
 ]
 
-const LOC_COLORS = ['#aa301a','#0a84ff','#30d158','#bf5af2','#ff9f0a','#ff453a']
+const LOC_COLORS = ['#1d6fcc','#c44228','#6d28d9','#0f9f6e','#f59e0b','#ef4444']
 
 function fmtDate(d, days) {
   // For 12m view, d is 'YYYY-MM'; for shorter views, d is 'YYYY-MM-DD'
@@ -775,17 +777,18 @@ function buildLocBarData(analytics, locations) {
 
 const CHART_TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#1c1c1e',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'var(--card-bg)',
+    border: '1px solid var(--border)',
     borderRadius: 10,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.88)',
+    color: 'var(--text-1)',
+    boxShadow: 'var(--shadow-md)',
   },
-  labelStyle: { color: 'rgba(255,255,255,0.4)', marginBottom: 4 },
-  cursor: { fill: 'rgba(255,255,255,0.03)' },
+  labelStyle: { color: 'var(--text-3)', marginBottom: 4 },
+  cursor: { fill: 'rgba(184,66,38,0.05)' },
 }
 
-const TICK_STYLE = { fill: 'rgba(255,255,255,0.3)', fontSize: 10 }
+const TICK_STYLE = { fill: 'var(--text-3)', fontSize: 10 }
 
 function ChartCard({ title, subtitle, children }) {
   return (
@@ -939,25 +942,21 @@ export default function Locations() {
 
   return (
     <Layout>
-      <div style={{
-        padding: isMobile ? '20px 16px' : isTablet ? '24px 24px' : '32px 36px',
-        maxWidth: isMobile ? '100%' : 980,
-      }}>
-        {/* Header */}
-        <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} mb-8 gap-3`}>
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-1)', letterSpacing: '-0.03em' }}>Locations</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>
-              Manage branches, staff access, and cross-location analytics.
-            </p>
-          </div>
-          <div className={`flex items-center gap-2 flex-wrap ${isMobile ? '' : 'flex-shrink-0'}`}>
+      <div className="app-page">
+        <PageHeader
+          icon={MapPinIcon}
+          title="Locations"
+          subtitle="Manage branches, staff access, and cross-location analytics"
+          accent="var(--primary)"
+          accentBg="rgba(184,66,38,0.10)"
+        >
+          <div className="page-toolbar">
             {locations.length < 2 && (
               <button
                 onClick={handleSeed}
                 disabled={seeding}
-                className="btn-secondary flex items-center gap-2"
-                style={{ height: 36, fontSize: 12 }}
+                className="btn-secondary"
+                style={{ height: 38, fontSize: 12, borderRadius: 12 }}
               >
                 {seeding ? <SpinnerIcon s={13} /> : <span>🏪</span>}
                 {isMobile ? 'Sample Locations' : 'Load Sample Locations'}
@@ -966,31 +965,33 @@ export default function Locations() {
             <button
               onClick={handleSeedAnalytics}
               disabled={seedingAnalytics}
-              className="btn-secondary flex items-center gap-2"
-              style={{ height: 36, fontSize: 12 }}
+              className="btn-secondary"
+              style={{ height: 38, fontSize: 12, borderRadius: 12 }}
               title="Seed 12 months of realistic order history for all locations"
             >
               {seedingAnalytics ? <SpinnerIcon s={13} /> : <span>📈</span>}
               {seedingAnalytics ? 'Seeding…' : isMobile ? '12-Month Data' : 'Load 12-Month Data'}
             </button>
-            <button onClick={() => setEditingLocation({})} className="btn-primary flex items-center gap-2" style={{ height: 36, fontSize: 12 }}>
+            <button onClick={() => setEditingLocation({})} className="btn-primary" style={{ height: 38, fontSize: 12 }}>
               <PlusIcon s={14} /> {isMobile ? 'Add' : 'Add Location'}
             </button>
           </div>
-        </div>
+        </PageHeader>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-          {[['overview', '📊 Overview'], ['locations', '📍 Locations']].map(([key, label]) => (
+        <div
+          className="tab-row mb-5 p-1 rounded-xl"
+          style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', width: 'fit-content' }}
+        >
+          {[['overview', 'Overview'], ['locations', 'Locations']].map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className="px-4 py-2 text-sm font-medium transition-colors"
+              className="tab-btn"
               style={{
-                color: tab === key ? 'var(--text-1)' : 'var(--text-3)',
-                borderBottom: tab === key ? '2px solid #cb4830' : '2px solid transparent',
-                marginBottom: -1,
-                background: 'none',
+                fontSize: 13,
+                padding: '6px 16px',
+                ...(tab === key ? { background: 'var(--page-accent)', color: '#fff' } : {}),
               }}
             >
               {label}
@@ -1015,20 +1016,27 @@ export default function Locations() {
                   {/* Period selector */}
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium" style={{ color: 'var(--text-3)' }}>Period:</span>
+                    <div className="segmented-tabs">
                     {PERIOD_OPTIONS.map(({ value, label }) => (
                       <button
                         key={value}
                         onClick={() => setAnalyticsDays(value)}
-                        className="text-xs px-3 py-1 rounded-full font-semibold transition-colors"
                         style={{
-                          background: analyticsDays === value ? 'rgba(170,48,26,0.15)' : 'rgba(255,255,255,0.05)',
-                          color: analyticsDays === value ? '#ffb4a5' : 'var(--text-3)',
-                          border: analyticsDays === value ? '1px solid rgba(170,48,26,0.3)' : '1px solid transparent',
+                          padding: '6px 14px',
+                          borderRadius: 7,
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          background: analyticsDays === value ? '#fff' : 'transparent',
+                          color: analyticsDays === value ? 'var(--page-accent)' : 'var(--text-3)',
+                          boxShadow: analyticsDays === value ? '0 1px 4px rgba(27,28,29,0.10)' : 'none',
                         }}
                       >
                         {label}
                       </button>
                     ))}
+                    </div>
                   </div>
 
                   {/* Summary stat strip */}
@@ -1073,11 +1081,11 @@ export default function Locations() {
                                 </linearGradient>
                               ))}
                             </defs>
-                            <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
+                            <CartesianGrid vertical={false} stroke="var(--border)" opacity={0.55} />
                             <XAxis
                               dataKey="date"
                               tick={TICK_STYLE}
-                              axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
+                              axisLine={{ stroke: 'var(--border)' }}
                               tickLine={false}
                               tickFormatter={(d, i) => i % tickEvery === 0 ? fmtDate(d, analyticsDays) : ''}
                             />
@@ -1109,14 +1117,14 @@ export default function Locations() {
                           </AreaChart>
                         </ResponsiveContainer>
                         {/* Color legend */}
-                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                           {chartLocIds.map((id, i) => {
                             const loc = locations.find(l => l.id === id)
                             const a = analytics.find(x => x.id === id)
                             return (
                               <div key={id} className="flex items-center gap-1.5">
                                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: LOC_COLORS[i % LOC_COLORS.length], flexShrink: 0 }} />
-                                <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                                <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>
                                   {loc?.name || 'Location'}
                                 </span>
                                 {a && (
@@ -1144,11 +1152,11 @@ export default function Locations() {
                     ) : (
                       <ResponsiveContainer width="100%" height={isMobile ? 140 : 180}>
                         <BarChart data={chartData} barCategoryGap="35%">
-                          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
+                          <CartesianGrid vertical={false} stroke="var(--border)" opacity={0.55} />
                           <XAxis
                             dataKey="date"
                             tick={TICK_STYLE}
-                            axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
+                            axisLine={{ stroke: 'var(--border)' }}
                             tickLine={false}
                             tickFormatter={(d, i) => i % tickEvery === 0 ? fmtDate(d, analyticsDays) : ''}
                           />
@@ -1203,15 +1211,16 @@ export default function Locations() {
                             </div>
                           </div>
                           {/* Metric toggle */}
-                          <div className="flex gap-1" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3, alignSelf: isMobile ? 'flex-start' : 'auto' }}>
+                          <div className="segmented-tabs" style={{ alignSelf: isMobile ? 'flex-start' : 'auto' }}>
                             {METRICS.map(m => (
                               <button
                                 key={m.key}
                                 onClick={() => setCompareMetric(m.key)}
                                 className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                                 style={{
-                                  background: compareMetric === m.key ? 'rgba(170,48,26,0.2)' : 'transparent',
-                                  color: compareMetric === m.key ? '#ffb4a5' : 'var(--text-3)',
+                                  background: compareMetric === m.key ? '#fff' : 'transparent',
+                                  color: compareMetric === m.key ? 'var(--page-accent)' : 'var(--text-3)',
+                                  boxShadow: compareMetric === m.key ? '0 1px 4px rgba(27,28,29,0.10)' : 'none',
                                 }}
                               >
                                 {m.label}
@@ -1241,7 +1250,7 @@ export default function Locations() {
                                       {row.shortName}
                                     </span>
                                     {isTop && (
-                                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0" style={{ background: 'rgba(170,48,26,0.15)', color: '#ffb4a5' }}>
+                                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0" style={{ background: 'var(--page-accent-light)', color: 'var(--page-accent)' }}>
                                         Top
                                       </span>
                                     )}
@@ -1257,7 +1266,7 @@ export default function Locations() {
                                   </div>
                                 </div>
                                 {/* Progress bar */}
-                                <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+                                <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 4, overflow: 'hidden' }}>
                                   <div style={{
                                     height: '100%',
                                     width: `${pct}%`,
@@ -1274,10 +1283,10 @@ export default function Locations() {
 
                         {/* Winner callout */}
                         {sorted[0]?.[metric.key] > 0 && (
-                          <div className="mt-5 pt-4 flex items-center gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div className="mt-5 pt-4 flex items-center gap-3" style={{ borderTop: '1px solid var(--border)' }}>
                             <span style={{ fontSize: 20 }}>🏆</span>
                             <div>
-                              <span className="text-xs font-semibold" style={{ color: '#ffb4a5' }}>
+                              <span className="text-xs font-semibold" style={{ color: 'var(--page-accent)' }}>
                                 {sorted[0].shortName}
                               </span>
                               <span className="text-xs" style={{ color: 'var(--text-3)' }}>
@@ -1395,7 +1404,7 @@ export default function Locations() {
                         today_orders: 0, today_revenue: 0,
                         active_orders: 0, avg_order_value: 0,
                       }
-                      const ACCENT_COLORS = ['#aa301a', '#0a84ff', '#30d158', '#bf5af2', '#ff9f0a']
+                      const ACCENT_COLORS = ['#1d6fcc', '#c44228', '#6d28d9', '#0f9f6e', '#f59e0b']
                       const accent = ACCENT_COLORS[i % ACCENT_COLORS.length]
                       return (
                         <div
@@ -1432,7 +1441,7 @@ export default function Locations() {
                             {/* Manager section — prominent */}
                             <div
                               className="rounded-xl px-3 py-2.5 mb-3"
-                              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
                             >
                               <div className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text-3)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                                 Manager
@@ -1456,7 +1465,7 @@ export default function Locations() {
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  <div className="flex items-center justify-center rounded-lg" style={{ width: 26, height: 26, background: 'rgba(255,255,255,0.05)' }}>
+                                  <div className="flex items-center justify-center rounded-lg" style={{ width: 26, height: 26, background: 'var(--surface-3)' }}>
                                     <UserIcon s={12} style={{ color: 'var(--text-3)' }} />
                                   </div>
                                   <span className="text-sm" style={{ color: 'var(--text-3)' }}>No manager assigned</span>

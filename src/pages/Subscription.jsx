@@ -5,7 +5,7 @@ import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import { subscriptionApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { CheckIcon, CreditCardIcon, SpinnerIcon } from '../components/Icons'
+import { CheckIcon, CreditCardIcon, SpinnerIcon, XIcon } from '../components/Icons'
 
 /* ══════════════════════════════════════════════════════════
    PLAN THEMES
@@ -22,6 +22,15 @@ const PLAN_THEMES = {
     glow:          'rgba(29,111,204,0.20)',
     ring:          'rgba(29,111,204,0.16)',
     label:         'Starter',
+  },
+  growth: {
+    accent:        '#0f9f6e',
+    accentLight:   'rgba(15,159,110,0.08)',
+    gradient:      'linear-gradient(145deg, #22c55e, #0f9f6e)',
+    headerGradient:'linear-gradient(160deg, #22c55e 0%, #0f9f6e 55%, #047857 100%)',
+    glow:          'rgba(15,159,110,0.20)',
+    ring:          'rgba(15,159,110,0.16)',
+    label:         'Growth',
   },
   pro: {
     accent:        '#c44228',
@@ -113,11 +122,60 @@ const FALLBACK_PLANS = {
   },
 }
 
+const DISPLAY_PLAN_ORDER = ['essential', 'pro', 'enterprise']
+const FALLBACK_PLAN_FIELDS = ['name', 'price', 'price_label', 'ai_model']
+
+function mergePlanForDisplay(key, plan = {}) {
+  const fallback = FALLBACK_PLANS[key] || {}
+  const merged = {
+    ...fallback,
+    ...plan,
+    limits: { ...(fallback.limits || {}), ...(plan?.limits || {}) },
+  }
+
+  FALLBACK_PLAN_FIELDS.forEach(field => {
+    if (merged[field] === undefined || merged[field] === null || merged[field] === '') {
+      merged[field] = fallback[field]
+    }
+  })
+
+  const features = Array.isArray(plan?.features) && plan.features.length
+    ? plan.features
+    : fallback.features || []
+
+  merged.features = key === 'pro'
+    ? features.map(feature => String(feature).replace(/growth/gi, 'Essential'))
+    : features
+
+  return merged
+}
+
+function buildPlanCatalog(plans) {
+  return Object.fromEntries(
+    Object.entries({ ...FALLBACK_PLANS, ...(plans || {}) }).map(([key, plan]) => [
+      key,
+      mergePlanForDisplay(key, plan),
+    ])
+  )
+}
+
+function orderedDisplayPlans(plans) {
+  const catalog = buildPlanCatalog(plans)
+  return DISPLAY_PLAN_ORDER.map(key => [key, catalog[key]]).filter(([, plan]) => Boolean(plan))
+}
+
 /* ── Plan SVG icons ── */
 const PLAN_ICONS = {
   essential: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 5.56 5.56l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  ),
+  growth: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M14 7h7v7" />
+      <path d="M4 21h16" />
     </svg>
   ),
   pro: (
@@ -653,20 +711,10 @@ function OtpModal({ targetPlan, planName, email, phone, devOtp, onVerify, onClos
    PLAN DETAILS MODAL
 ══════════════════════════════════════════════════════════ */
 function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelectPlan, changing }) {
-  const planCatalog = Object.fromEntries(
-    Object.entries({ ...FALLBACK_PLANS, ...(plans || {}) }).map(([key, plan]) => {
-      const fallback = FALLBACK_PLANS[key] || {}
-      return [key, {
-        ...fallback,
-        ...plan,
-        limits: { ...(fallback.limits || {}), ...(plan?.limits || {}) },
-        features: plan?.features?.length ? plan.features : fallback.features || [],
-      }]
-    })
-  )
+  const planCatalog = buildPlanCatalog(plans)
   const current = planCatalog[currentPlan] || planCatalog.essential
   const theme = PLAN_THEMES[currentPlan] || PLAN_THEMES.essential
-  const options = Object.entries(planCatalog)
+  const options = orderedDisplayPlans(plans)
 
   const limitItems = [
     ['Calls / month', current.limits?.calls_per_month === -1 ? 'Unlimited' : current.limits?.calls_per_month?.toLocaleString()],
@@ -735,12 +783,12 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
               border: '1px solid rgba(255,255,255,0.24)',
               background: 'rgba(255,255,255,0.12)',
               color: '#fff', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 20, lineHeight: 1,
+              display: 'inline-grid', placeItems: 'center',
+              lineHeight: 0, padding: 0,
             }}
             aria-label="Close plan details"
           >
-            ×
+            <XIcon size={16} />
           </button>
         </div>
 
@@ -902,9 +950,10 @@ export default function Subscription() {
     setChanging(newPlan); setMessage(null)
     try {
       const res = await subscriptionApi.sendPlanOtp(newPlan)
+      const selectedPlan = buildPlanCatalog(plans)[newPlan]
       setOtpModal({
         plan: newPlan,
-        planName: plans?.[newPlan]?.name || newPlan,
+        planName: selectedPlan?.name || newPlan,
         email: res.data.email,
         phone: res.data.phone,
         devOtp: res.data.otp || null,
@@ -957,6 +1006,7 @@ export default function Subscription() {
   const billing      = subscription?.billing || {}
   const usage        = subscription?.usage || {}
   const currentTheme = PLAN_THEMES[currentPlan] || PLAN_THEMES.essential
+  const displayPlans = orderedDisplayPlans(plans)
 
   return (
     <Layout>
@@ -1024,7 +1074,7 @@ export default function Subscription() {
           gap: 18, marginBottom: 20, alignItems: 'stretch',
           animation: 'fadeInUp 0.5s ease 0.06s both',
         }}>
-          {plans && Object.entries(plans).map(([key, plan], index) => (
+          {displayPlans.map(([key, plan], index) => (
             <PlanCard
               key={key} planKey={key} plan={plan}
               isCurrent={key === currentPlan}

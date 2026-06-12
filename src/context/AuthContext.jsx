@@ -3,11 +3,23 @@ import { authApi } from '../services/api'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [owner, setOwner] = useState(() => {
+function readStoredOwner() {
+  try {
     const stored = localStorage.getItem('owner')
-    return stored ? JSON.parse(stored) : null
-  })
+    if (!stored) return null
+
+    const parsed = JSON.parse(stored)
+    if (parsed && typeof parsed === 'object') return parsed
+  } catch {}
+
+  localStorage.removeItem('owner')
+  localStorage.removeItem('token')
+  localStorage.removeItem('active_location')
+  return null
+}
+
+export function AuthProvider({ children }) {
+  const [owner, setOwner] = useState(readStoredOwner)
   const [loading, setLoading] = useState(false)
 
   /** Step 1: validate input, send OTP to email + phone.

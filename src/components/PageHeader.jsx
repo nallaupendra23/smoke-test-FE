@@ -1,27 +1,27 @@
+import { DashboardIcon } from './Icons'
+
 export default function PageHeader({
   icon: Icon,
   title,
   subtitle,
   eyebrow,
-  accent = 'var(--primary)',
-  accentBg = 'var(--primary-light)',
   children,
 }) {
+  const HeaderIcon = Icon || DashboardIcon
+
   return (
     <div className="page-header">
       <div className="page-header-copy">
-        {Icon && (
-          <div
-            className="page-header-icon"
-            style={{
-              color: accent,
-              background: accentBg,
-              boxShadow: `0 10px 26px color-mix(in srgb, ${accent} 18%, transparent)`,
-            }}
-          >
-            <Icon size={22} />
-          </div>
-        )}
+        <div
+          className="page-header-icon"
+          style={{
+            color: 'var(--page-accent)',
+            background: 'var(--page-accent-light)',
+            boxShadow: '0 10px 26px var(--page-accent-ring)',
+          }}
+        >
+          <HeaderIcon size={22} />
+        </div>
         <div>
           {eyebrow && <div className="page-header-eyebrow">{eyebrow}</div>}
           <h1 className="page-header-title">{title}</h1>

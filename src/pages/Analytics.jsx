@@ -446,80 +446,82 @@ export default function Analytics() {
         {/* ════════════════════════════════════════
             MAIN CALL VOLUME CARD
         ════════════════════════════════════════ */}
-        <div className="card" style={{ padding: '28px 32px', marginBottom: 20 }}>
-          {loading ? (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Skel w={140} h={14} />
-                  <Skel w={80}  h={40} r={6} />
+        {(loading || callData) && (
+          <div className="card" style={{ padding: '28px 32px', marginBottom: 20 }}>
+            {loading ? (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Skel w={140} h={14} />
+                    <Skel w={80}  h={40} r={6} />
+                  </div>
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                    <Skel w={100} h={14} />
+                    <Skel w={60}  h={28} r={6} />
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-                  <Skel w={100} h={14} />
-                  <Skel w={60}  h={28} r={6} />
-                </div>
+                <Skel w="100%" h={200} />
               </div>
-              <Skel w="100%" h={200} />
-            </div>
-          ) : callData && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-                <div>
-                  <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 6, margin: '0 0 6px' }}>
-                    Call Volume — last {days} days
-                  </p>
-                  <div style={{ fontFamily: 'Noto Serif, Georgia, serif', fontSize: 40, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                    {totalCalls.toLocaleString()}
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 6, margin: '0 0 6px' }}>
+                      Call Volume — last {days} days
+                    </p>
+                    <div style={{ fontFamily: 'Noto Serif, Georgia, serif', fontSize: 40, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                      {totalCalls.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>
+                      calls received via AI phone line
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>
-                    calls received via AI phone line
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontFamily: 'Noto Serif, Georgia, serif', fontSize: 30, fontWeight: 700, color: '#aa301a', lineHeight: 1 }}>
+                      {completionRate}%
+                    </div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, fontSize: 12, fontWeight: 600, color: completionRate >= 70 ? '#059669' : completionRate >= 50 ? '#d97706' : '#dc2626' }}>
+                      <TrendIcon />
+                      {completionRate >= 70 ? 'Strong' : completionRate >= 50 ? 'Moderate' : 'Low'} completion rate
+                    </div>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'Noto Serif, Georgia, serif', fontSize: 30, fontWeight: 700, color: '#aa301a', lineHeight: 1 }}>
-                    {completionRate}%
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, fontSize: 12, fontWeight: 600, color: completionRate >= 70 ? '#059669' : completionRate >= 50 ? '#d97706' : '#dc2626' }}>
-                    <TrendIcon />
-                    {completionRate >= 70 ? 'Strong' : completionRate >= 50 ? 'Moderate' : 'Low'} completion rate
-                  </div>
-                </div>
-              </div>
 
-              {/* Area chart with gradient */}
-              <defs>
-                <linearGradient id="callGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#aa301a" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#aa301a" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={callData.calls_by_date} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="callAreaFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"  stopColor="#aa301a" stopOpacity={0.18}/>
-                      <stop offset="100%" stopColor="#aa301a" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 0" stroke="var(--surface-3)" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area
-                    type="monotone"
-                    dataKey="count"
-                    name="Calls"
-                    stroke="#aa301a"
-                    strokeWidth={2.5}
-                    fill="url(#callAreaFill)"
-                    dot={{ fill: '#aa301a', strokeWidth: 0, r: 3 }}
-                    activeDot={{ r: 5, fill: '#aa301a', strokeWidth: 2, stroke: '#fff' }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </>
-          )}
-        </div>
+                {/* Area chart with gradient */}
+                <defs>
+                  <linearGradient id="callGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#aa301a" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#aa301a" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={callData.calls_by_date} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="callAreaFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"  stopColor="#aa301a" stopOpacity={0.18}/>
+                        <stop offset="100%" stopColor="#aa301a" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 0" stroke="var(--surface-3)" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      name="Calls"
+                      stroke="#aa301a"
+                      strokeWidth={2.5}
+                      fill="url(#callAreaFill)"
+                      dot={{ fill: '#aa301a', strokeWidth: 0, r: 3 }}
+                      activeDot={{ r: 5, fill: '#aa301a', strokeWidth: 2, stroke: '#fff' }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </>
+            )}
+          </div>
+        )}
 
         {/* ════════════════════════════════════════
             ROW 2: Call Stats + Order Breakdown

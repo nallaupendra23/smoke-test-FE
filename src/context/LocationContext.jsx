@@ -9,7 +9,7 @@
  * via the axios interceptor registered here.
  */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import api from '../services/api'
+import api, { unwrapList } from '../services/api'
 
 const LocationContext = createContext(null)
 
@@ -36,16 +36,17 @@ export function LocationProvider({ children }) {
     setLoadingLocations(true)
     try {
       const res = await api.get('/locations')
-      setLocations(res.data)
+      const list = unwrapList(res)
+      setLocations(list)
 
       // If stored active location still valid, keep it; otherwise pick first
       const stored = activeLocation
-      const stillValid = stored && res.data.find(l => l.id === stored.id)
-      if (!stillValid && res.data.length > 0) {
-        setActiveLocation(res.data[0])
+      const stillValid = stored && list.find(l => l.id === stored.id)
+      if (!stillValid && list.length > 0) {
+        setActiveLocation(list[0])
       } else if (stillValid) {
         // refresh name/address in case it changed
-        const refreshed = res.data.find(l => l.id === stored.id)
+        const refreshed = list.find(l => l.id === stored.id)
         if (refreshed) setActiveLocation(refreshed)
       }
     } catch {

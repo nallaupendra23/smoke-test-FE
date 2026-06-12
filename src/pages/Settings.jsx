@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import { SettingsIcon } from '../components/Icons'
-import { restaurantApi, authApi, subscriptionApi } from '../services/api'
+import { restaurantApi, authApi, subscriptionApi, locationsApi, unwrap } from '../services/api'
+import { useLocation as useLocationCtx } from '../context/LocationContext'
 
 /* ── Constants ── */
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -421,6 +422,9 @@ function EmployeeModal({ employee, onSave, onClose }) {
    Main Settings Component
    ════════════════════════════════════════════════════════════════════════════ */
 export default function Settings() {
+  const routeLocation = useLocation()
+  const isAccountPage = routeLocation.pathname === '/account'
+  const { activeLocation, setActiveLocation, loadLocations } = useLocationCtx()
   const [form, setForm] = useState({
     name: '', address: '', phone: '', estimated_wait_minutes: '20', timezone: 'America/New_York',
     delivery_radius_miles: 5,
@@ -432,7 +436,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
   const [modal, setModal] = useState(null)
-  const [activeTab, setActiveTab] = useState('info')
+  const [activeTab, setActiveTab] = useState(isAccountPage ? 'account' : 'info')
   const navigate = useNavigate()
 
   // Account tab
@@ -468,16 +472,22 @@ export default function Settings() {
   }, [phoneOtpCountdown])
 
   useEffect(() => {
+    let cancelled = false
+    setLoading(true)
     Promise.all([
       restaurantApi.get(),
       authApi.me(),
       subscriptionApi.getCurrent().catch(() => null),
     ]).then(([restRes, meRes, subRes]) => {
+      if (cancelled) return
       const r = restRes.data
+      const loc = activeLocation
       setForm({
-        name: r.name || '', address: r.address || '', phone: r.phone || '',
+        name: loc ? (loc.name || '') : (r.name || ''),
+        address: loc ? (loc.address || '') : (r.address || ''),
+        phone: loc ? (loc.phone || '') : (r.phone || ''),
         estimated_wait_minutes: r.estimated_wait_minutes || '20',
-        timezone: r.timezone || 'America/New_York',
+        timezone: loc?.timezone || r.timezone || 'America/New_York',
         delivery_radius_miles: r.delivery_radius_miles ?? 5,
         delivery_fee: r.delivery_fee ?? 0,
       })
@@ -486,23 +496,52 @@ export default function Settings() {
         try { setEmployees(JSON.parse(r.employees)) } catch {}
       }
       const me = meRes.data
-      setAccount({ email: me.email || '', phone: r.phone || '' })
+      const accountPhone = me.phone || r.phone || ''
+      setAccount({ email: me.email || '', phone: accountPhone })
       setEmailForm(prev => ({ ...prev, new_email: me.email || '' }))
-      setPhoneForm(prev => ({ ...prev, phone: r.phone || '' }))
+      setPhoneForm(prev => ({ ...prev, phone: accountPhone }))
       if (subRes?.data?.current_plan) setCurrentPlan(subRes.data.current_plan)
       else if (me.plan) setCurrentPlan(me.plan)
-    }).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [activeLocation?.id])
+
+  useEffect(() => {
+    setActiveTab(isAccountPage ? 'account' : 'info')
+    setSecurityExpanded(null)
+  }, [isAccountPage])
 
   /* ── Handlers ── */
   const handleSave = async () => {
     setSaving(true)
     try {
-      await restaurantApi.update({
-        ...form,
+      const locationPayload = {
+        name: form.name,
+        address: form.address,
+        phone: form.phone,
+        timezone: form.timezone,
+      }
+      const restaurantPayload = {
+        estimated_wait_minutes: form.estimated_wait_minutes,
+        timezone: form.timezone,
+        delivery_radius_miles: form.delivery_radius_miles,
+        delivery_fee: form.delivery_fee,
         hours: JSON.stringify(hours),
         employees: JSON.stringify(employees),
-      })
+      }
+
+      if (activeLocation?.id) {
+        const locRes = await locationsApi.update(activeLocation.id, locationPayload)
+        const updatedLocation = unwrap(locRes)
+        setActiveLocation(updatedLocation)
+        loadLocations()
+      } else {
+        Object.assign(restaurantPayload, locationPayload)
+      }
+
+      await restaurantApi.update(restaurantPayload)
       setToast({ message: 'Settings saved', type: 'success' })
     } catch (err) {
       setToast({ message: err.response?.data?.detail || 'Failed to save', type: 'error' })
@@ -693,8 +732,22 @@ export default function Settings() {
     { id: 'info', label: 'General' },
     { id: 'hours', label: 'Hours' },
     { id: 'team', label: 'Team' },
-    { id: 'account', label: 'Account' },
   ]
+  const openDaysCount = DAYS.filter(d => !hours[d]?.closed).length
+  const planLabel = currentPlan ? currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) : 'Basic'
+  const settingsOverview = isAccountPage
+    ? [
+        { label: 'Account', value: account.email || 'No email set' },
+        { label: 'Plan', value: planLabel },
+        { label: 'Phone', value: account.phone || 'Not set' },
+        { label: 'Security', value: securityExpanded ? 'Editing' : 'Ready' },
+      ]
+    : [
+        { label: 'Restaurant', value: form.name || 'Unnamed' },
+        { label: 'Wait Time', value: `${form.estimated_wait_minutes || 0} min` },
+        { label: 'Delivery', value: `${Number(form.delivery_radius_miles || 0).toFixed(1)} mi` },
+        { label: 'Open Days', value: `${openDaysCount} / 7` },
+      ]
 
   if (loading) return (
     <Layout>
@@ -717,41 +770,44 @@ export default function Settings() {
 
         <PageHeader
           icon={SettingsIcon}
-          title="Settings"
-          subtitle="Manage your restaurant, team, and account"
-          accent="var(--accent-violet)"
-          accentBg="rgba(124,58,237,0.10)"
+          title={isAccountPage ? 'Account' : 'Settings'}
+          subtitle={isAccountPage ? 'Manage your login, security, and billing' : 'Manage restaurant details, hours, and team'}
+          accent={isAccountPage ? 'var(--primary)' : 'var(--accent-violet)'}
+          accentBg={isAccountPage ? 'rgba(184,66,38,0.10)' : 'rgba(124,58,237,0.10)'}
         />
 
-        {/* Tabs */}
-        <div className="tab-row" style={{ gap: 2, marginBottom: 28, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: 4 }}>
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                flex: 1, padding: '8px 14px',
-                fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-                color: activeTab === tab.id ? 'var(--text-1)' : 'var(--text-3)',
-                background: activeTab === tab.id ? 'var(--card-bg)' : 'transparent',
-                border: 'none', cursor: 'pointer', borderRadius: 10,
-                boxShadow: activeTab === tab.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <div className="settings-shell">
+          {!isAccountPage && (
+            <div className="settings-tabs">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="settings-overview" style={{ animation: 'fadeInUp 0.3s ease 0.04s both' }}>
+            {settingsOverview.map(card => (
+              <div key={card.label} className="settings-summary-card">
+                <div className="settings-summary-label">{card.label}</div>
+                <div className="settings-summary-value" title={String(card.value)}>{card.value}</div>
+              </div>
+            ))}
+          </div>
 
         {/* ════ TAB: General ════ */}
         {activeTab === 'info' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeInUp 0.3s ease both' }}>
+          <div className="settings-grid" style={{ animation: 'fadeInUp 0.3s ease both' }}>
 
             {/* Restaurant identity group */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, paddingLeft: 4 }}>Restaurant</div>
-              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+            <div className="settings-section">
+              <div className="settings-section-label">Restaurant</div>
+              <div className="settings-card">
                 {[
                   { label: 'Name',    key: 'name',    placeholder: "Mario's Pizza",                    type: 'text' },
                   { label: 'Phone',   key: 'phone',   placeholder: '+1 (215) 555-0100',                type: 'tel'  },
@@ -775,9 +831,9 @@ export default function Settings() {
             </div>
 
             {/* Operations group */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, paddingLeft: 4 }}>Operations</div>
-              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+            <div className="settings-section">
+              <div className="settings-section-label">Operations</div>
+              <div className="settings-card">
                 <div style={{ display: 'flex', alignItems: 'center', minHeight: 54, padding: '0 20px', gap: 16 }}>
                   <span style={{ width: 120, fontSize: 14, fontWeight: 500, color: 'var(--text-2)', flexShrink: 0 }}>Avg. Wait Time</span>
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
@@ -809,9 +865,9 @@ export default function Settings() {
             </div>
 
             {/* Delivery group */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, paddingLeft: 4 }}>Delivery</div>
-              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+            <div className="settings-section settings-section-wide">
+              <div className="settings-section-label">Delivery</div>
+              <div className="settings-card">
 
                 {/* Max delivery distance slider */}
                 <div style={{ padding: '14px 20px 16px' }}>
@@ -1237,27 +1293,21 @@ export default function Settings() {
         })()}
         {/* Save button (not on Account or Email tab) */}
         {activeTab !== 'account' && (
-          <div style={{ marginTop: 24 }}>
+          <div className="settings-save-bar">
+            <div className="settings-save-copy">
+              <div className="settings-save-title">Restaurant settings</div>
+              <div className="settings-save-subtitle">Save changes after editing details, hours, delivery, or team.</div>
+            </div>
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{
-                width: '100%', padding: '14px 20px', borderRadius: 14,
-                border: 'none', background: saving ? 'var(--surface-4)' : 'var(--primary)',
-                color: saving ? 'var(--text-3)' : '#fff',
-                fontSize: 14, fontWeight: 700, fontFamily: 'inherit',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                letterSpacing: '-0.01em',
-                transition: 'background 0.15s ease, transform 0.1s ease',
-                boxShadow: saving ? 'none' : '0 4px 16px rgba(170,48,26,0.22)',
-              }}
-              onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--primary-hover)' }}
-              onMouseLeave={e => { if (!saving) e.currentTarget.style.background = 'var(--primary)' }}
+              className="settings-save-button"
             >
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
         )}
+        </div>
       </div>
 
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}

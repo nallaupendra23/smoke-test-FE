@@ -37,6 +37,7 @@ function AppRoutes() {
       <Route path="/agent" element={<ProtectedRoute><AgentSettings /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><DocumentUpload /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/account" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />

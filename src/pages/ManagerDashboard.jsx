@@ -5,6 +5,7 @@ import {
   Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 import { managerApi, locationsApi, staffApi, unwrap, unwrapList } from '../services/api'
 
 /* ── Constants ──────────────────────────────────────────────────────── */
@@ -771,31 +772,15 @@ export default function ManagerDashboard() {
 
       <div style={{ padding: '32px 32px 48px', maxWidth: 1200 }}>
 
-        {/* ── Page header ── */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          marginBottom: 28, flexWrap: 'wrap', gap: 12,
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 10,
-                background: 'linear-gradient(135deg, #aa301a, #cb4830)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(170,48,26,0.4)',
-              }}>
-                <BarChartIcon size={16} style={{ color: '#fff' }} />
-              </div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: TEXT_PRIMARY, letterSpacing: '-0.04em', margin: 0 }}>
-                Manager Dashboard
-              </h1>
-            </div>
-            <p style={{ fontSize: 13, color: TEXT_DIM, margin: 0, paddingLeft: 44 }}>
-              Performance across {hasData ? locs.length : '—'} location{locs.length !== 1 ? 's' : ''}
-            </p>
-          </div>
+        <PageHeader
+          icon={BarChartIcon}
+          title="Manager Dashboard"
+          subtitle={`Performance across ${hasData ? locs.length : '—'} location${locs.length !== 1 ? 's' : ''}`}
+          accent="var(--primary)"
+          accentBg="var(--primary-light)"
+        >
           <PeriodPicker value={days} onChange={setDays} />
-        </div>
+        </PageHeader>
 
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 import { menuApi, knowledgeApi, unwrapList } from '../services/api'
-import { PlusIcon, SearchIcon, SpinnerIcon, TrashIcon, CheckIcon, XIcon } from '../components/Icons'
+import { PlusIcon, SearchIcon, SpinnerIcon, TrashIcon, CheckIcon, XIcon, MenuIcon } from '../components/Icons'
 
 const EMPTY_FORM = { category: '', name: '', description: '', price: '', available: true }
 
@@ -439,7 +440,8 @@ export default function MenuManager() {
   const [message, setMessage] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState(null) // null = category grid, string = drilled in
+  const [activeCategory, setActiveCategory] = useState(null)
+  const detailRef = useRef(null)
 
   const load = async () => {
     try {
@@ -451,6 +453,13 @@ export default function MenuManager() {
   }
 
   useEffect(() => { load() }, [])
+
+  useEffect(() => {
+    if (!activeCategory) return
+    window.setTimeout(() => {
+      detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  }, [activeCategory])
 
   // Categories
   const categories = ['All', ...new Set(items.map(i => i.category))]
@@ -534,49 +543,23 @@ export default function MenuManager() {
     setShowModal(true)
   }
 
+  const selectCategory = (category) => {
+    setActiveCategory(category)
+    setSearch('')
+  }
+
   return (
     <Layout>
       <div className="app-page">
 
-        {/* ── Header ── */}
-        <div className="flex items-start justify-between mb-8" style={{ animation: 'fadeInUp 0.4s ease both' }}>
-          <div>
-            {activeCategory ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => { setActiveCategory(null); setSearch('') }}
-                  className="flex items-center gap-1.5 text-sm font-semibold transition-colors"
-                  style={{ color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-                  Menu
-                </button>
-                <span style={{ color: 'var(--border)', fontSize: 16 }}>/</span>
-                <h1
-                  className="font-extrabold tracking-tight"
-                  style={{ fontSize: 28, color: 'var(--text-1)', letterSpacing: '-0.03em' }}
-                >
-                  <span style={{ marginRight: 8 }}>{getCategoryIcon(activeCategory)}</span>
-                  {activeCategory}
-                </h1>
-              </div>
-            ) : (
-              <div>
-                <h1
-                  className="font-extrabold tracking-tight"
-                  style={{ fontSize: 32, color: 'var(--text-1)', letterSpacing: '-0.035em' }}
-                >
-                  Menu
-                </h1>
-                <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>
-                  {totalItems} items across {categoriesCount} categories
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2.5">
+        <PageHeader
+          icon={MenuIcon}
+          title="Menu"
+          subtitle={`${totalItems} items across ${categoriesCount} categories`}
+          accent="var(--primary)"
+          accentBg="var(--primary-light)"
+        >
+          <div className="page-toolbar">
             <button
               onClick={async () => {
                 setSyncing(true)
@@ -593,16 +576,12 @@ export default function MenuManager() {
                 }
               }}
               disabled={syncing || loading}
-              className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200"
+              className="btn-secondary"
               style={{
-                background: 'var(--card-bg)',
-                border: '1.5px solid var(--border)',
-                color: 'var(--text-2)',
-                boxShadow: 'var(--shadow-sm)',
+                padding: '9px 14px',
+                borderRadius: 12,
                 opacity: syncing || loading ? 0.6 : 1,
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#aa301a'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               title="Sync menu items from Knowledge Base"
             >
               <svg
@@ -619,18 +598,13 @@ export default function MenuManager() {
             </button>
             <button
               onClick={openAddModal}
-              className="flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
-              style={{
-                background: 'linear-gradient(145deg, #cb4830, #aa301a)',
-                boxShadow: '0 2px 8px rgba(170,48,26,0.3)',
-              }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(170,48,26,0.4)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(170,48,26,0.3)'}
+              className="btn-primary"
+              style={{ borderRadius: 12, padding: '10px 18px' }}
             >
               <PlusIcon size={15} /> Add Item
             </button>
           </div>
-        </div>
+        </PageHeader>
 
         {/* ── Alert ── */}
         {message && (
@@ -678,105 +652,121 @@ export default function MenuManager() {
           ))}
         </div>
 
-        {/* ══════ CATEGORY GRID (home) ══════ */}
-        {!activeCategory && (
-          loading ? (
-            <div className="flex items-center justify-center py-24">
-              <SpinnerIcon size={28} />
-            </div>
-          ) : uniqueCategories.length === 0 ? (
-            <div
-              className="rounded-2xl py-20 text-center"
-              style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', animation: 'fadeInUp 0.4s ease both' }}
+        {/* ══════ CATEGORY GRID ══════ */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <SpinnerIcon size={28} />
+          </div>
+        ) : uniqueCategories.length === 0 ? (
+          <div
+            className="rounded-2xl py-20 text-center"
+            style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', animation: 'fadeInUp 0.4s ease both' }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🍽</div>
+            <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--text-1)' }}>Your menu is empty</h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-3)' }}>
+              Upload your menu in the Knowledge Base to auto-import items, or add them manually.
+            </p>
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-white mx-auto"
+              style={{ background: 'linear-gradient(145deg, #cb4830, #aa301a)' }}
             >
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🍽</div>
-              <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--text-1)' }}>Your menu is empty</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-3)' }}>
-                Upload your menu in the Knowledge Base to auto-import items, or add them manually.
-              </p>
-              <button
-                onClick={openAddModal}
-                className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-white mx-auto"
-                style={{ background: 'linear-gradient(145deg, #cb4830, #aa301a)' }}
-              >
-                <PlusIcon size={14} /> Add First Item
-              </button>
-            </div>
-          ) : (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', animation: 'fadeInUp 0.4s ease 0.1s both' }}
-            >
-              {uniqueCategories.map(cat => {
-                const catItems = items.filter(i => i.category === cat)
-                const availCount = catItems.filter(i => i.available).length
-                const color = getCategoryColor(cat)
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => { setActiveCategory(cat); setSearch('') }}
-                    className="text-left rounded-2xl overflow-hidden transition-all duration-200 group"
-                    style={{
-                      background: 'var(--card-bg)',
-                      border: '1px solid var(--border)',
-                      boxShadow: 'var(--shadow-sm)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; e.currentTarget.style.borderColor = color }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+              <PlusIcon size={14} /> Add First Item
+            </button>
+          </div>
+        ) : (
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', animation: 'fadeInUp 0.4s ease 0.1s both' }}
+          >
+            {uniqueCategories.map(cat => {
+              const selected = activeCategory === cat
+              const catItems = items.filter(i => i.category === cat)
+              const availCount = catItems.filter(i => i.available).length
+              const color = getCategoryColor(cat)
+              return (
+                <button
+                  key={cat}
+                  onClick={() => selectCategory(cat)}
+                  className="text-left rounded-2xl overflow-hidden transition-all duration-200 group"
+                  style={{
+                    background: 'var(--card-bg)',
+                    border: selected ? `2px solid ${color}` : '1px solid var(--border)',
+                    boxShadow: selected ? `0 12px 28px ${color}18` : 'var(--shadow-sm)',
+                    cursor: 'pointer',
+                    transform: selected ? 'translateY(-2px)' : 'translateY(0)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = `0 12px 28px ${color}18`
+                    e.currentTarget.style.borderColor = color
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = selected ? 'translateY(-2px)' : 'translateY(0)'
+                    e.currentTarget.style.boxShadow = selected ? `0 12px 28px ${color}18` : 'var(--shadow-sm)'
+                    e.currentTarget.style.borderColor = selected ? color : 'var(--border)'
+                  }}
+                >
+                  {/* Colored top strip with icon */}
+                  <div
+                    className="flex items-center justify-center"
+                    style={{ height: 88, background: `${color}14` }}
                   >
-                    {/* Colored top strip with icon */}
                     <div
-                      className="flex items-center justify-center"
-                      style={{ height: 88, background: `${color}14` }}
+                      className="flex items-center justify-center rounded-2xl"
+                      style={{ width: 56, height: 56, background: `${color}22`, fontSize: 26 }}
                     >
-                      <div
-                        className="flex items-center justify-center rounded-2xl"
-                        style={{ width: 56, height: 56, background: `${color}22`, fontSize: 26 }}
-                      >
-                        {getCategoryIcon(cat)}
-                      </div>
+                      {getCategoryIcon(cat)}
                     </div>
+                  </div>
 
-                    {/* Info */}
-                    <div className="px-4 py-3">
-                      <div className="font-bold mb-1 truncate" style={{ fontSize: 14, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-                        {cat}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                          {catItems.length} item{catItems.length !== 1 ? 's' : ''}
-                        </span>
-                        <span style={{ fontSize: 11, color: availCount === catItems.length ? '#16a34a' : '#d97706', fontWeight: 600 }}>
-                          {availCount}/{catItems.length} avail
-                        </span>
-                      </div>
+                  {/* Info */}
+                  <div className="px-4 py-3">
+                    <div className="font-bold mb-1 truncate" style={{ fontSize: 14, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
+                      {cat}
                     </div>
+                    <div className="flex items-center justify-between">
+                      <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                        {catItems.length} item{catItems.length !== 1 ? 's' : ''}
+                      </span>
+                      <span style={{ fontSize: 11, color: availCount === catItems.length ? '#16a34a' : '#d97706', fontWeight: 600 }}>
+                        {availCount}/{catItems.length} avail
+                      </span>
+                    </div>
+                  </div>
 
-                    {/* Bottom accent bar */}
-                    <div style={{ height: 3, background: color, opacity: 0.7 }} />
-                  </button>
-                )
-              })}
-            </div>
-          )
+                  {/* Bottom accent bar */}
+                  <div style={{ height: 3, background: color, opacity: selected ? 1 : 0.7 }} />
+                </button>
+              )
+            })}
+          </div>
         )}
 
-        {/* ══════ CATEGORY DETAIL (drilled in) ══════ */}
+        {/* ══════ CATEGORY DETAIL (inline) ══════ */}
         {activeCategory && (
-          <div style={{ animation: 'fadeInUp 0.3s ease both' }}>
+          <div ref={detailRef} style={{ animation: 'fadeInUp 0.3s ease both', marginTop: 28 }}>
 
             {/* Search bar */}
-            <div className="relative mb-4" style={{ maxWidth: 300 }}>
-              <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
-              <input
-                className="input"
-                style={{ paddingLeft: 32, fontSize: 13 }}
-                placeholder={`Search in ${activeCategory}...`}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                autoFocus
-              />
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="relative" style={{ maxWidth: 320, flex: '1 1 320px' }}>
+                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
+                <input
+                  className="input"
+                  style={{ paddingLeft: 32, fontSize: 13 }}
+                  placeholder={`Search in ${activeCategory}...`}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => { setActiveCategory(null); setSearch('') }}
+                className="btn-secondary"
+                style={{ padding: '9px 14px', borderRadius: 12 }}
+              >
+                Clear selection
+              </button>
             </div>
 
             {loading ? (
