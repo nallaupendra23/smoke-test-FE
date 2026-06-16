@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Layout from '../components/Layout'
 import { menuApi, ordersApi, addonsApi, restaurantApi, unwrap, unwrapList } from '../services/api'
-import { SpinnerIcon, XIcon, CheckIcon, SearchIcon, PlusIcon, TrashIcon } from '../components/Icons'
+import { SpinnerIcon, XIcon, CheckIcon, SearchIcon, PlusIcon, TrashIcon, OrdersIcon, SettingsIcon } from '../components/Icons'
 import { haversineKm, geocodeAddress, searchAddresses } from '../hooks/useGoogleMaps'
 
 const CATEGORY_ICONS = {
@@ -203,8 +203,8 @@ function InlinePrice({ value, onSave }) {
 /* ── Toggle switch ── */
 function Toggle({ checked, onChange, disabled }) {
   return (
-    <button type="button" disabled={disabled} onClick={onChange} style={{ width: 36, height: 22, borderRadius: 11, background: checked ? '#34c759' : 'var(--border)', border: 'none', outline: 'none', padding: 0, cursor: disabled ? 'wait' : 'pointer', opacity: disabled ? 0.5 : 1, flexShrink: 0, transition: 'background 0.2s' }}>
-      <span style={{ display: 'block', width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.18)', transform: `translateX(${checked ? 16 : 2}px) translateY(2px)`, transition: 'transform 0.2s' }} />
+    <button type="button" disabled={disabled} onClick={onChange} style={{ width: 36, height: 22, borderRadius: 11, background: checked ? '#34c759' : 'var(--border)', border: 'none', outline: 'none', padding: 0, cursor: disabled ? 'wait' : 'pointer', opacity: disabled ? 0.5 : 1, flexShrink: 0, transition: 'background 0.2s', display: 'inline-flex', alignItems: 'center' }}>
+      <span style={{ display: 'block', width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.18)', transform: `translateX(${checked ? 16 : 2}px)`, transition: 'transform 0.2s' }} />
     </button>
   )
 }
@@ -309,7 +309,7 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
       <div
         className="fixed top-0 right-0 bottom-0 z-40 flex flex-col"
         style={{
-          width: 440,
+          width: 500,
           background: 'var(--card-bg)',
           borderLeft: '1px solid var(--border)',
           boxShadow: '-8px 0 40px rgba(0,0,0,0.2)',
@@ -329,22 +329,27 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>{items.length} items · manage your menu</p>
             </div>
           </div>
-          <button onClick={onClose} className="flex items-center justify-center rounded-full" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)' }}>
+          <button onClick={onClose} className="rounded-full" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', display: 'inline-grid', placeItems: 'center', padding: 0, lineHeight: 0 }}>
             <XIcon size={14} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex px-5 pt-4 pb-0 gap-1 flex-shrink-0 flex-wrap">
+        <div className="grid px-5 pt-4 pb-0 gap-2 flex-shrink-0" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
           {[['items', '🍽 Menu Items'], ['add', '＋ Add Item'], ['extras', '💲 Paid Extras']].map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-150"
+              className="px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150"
               style={{
+                minHeight: 36,
                 background: tab === key ? '#aa301a' : 'var(--border)',
                 color: tab === key ? '#fff' : 'var(--text-2)',
                 boxShadow: tab === key ? '0 2px 8px rgba(170,48,26,0.25)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                whiteSpace: 'nowrap',
               }}
             >
               {label}
@@ -384,8 +389,16 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                 <div key={item.id} className="rounded-2xl mb-2 overflow-hidden" style={{ border: '1px solid var(--border)', background: editingId === item.id ? 'rgba(170,48,26,0.02)' : 'var(--bg)' }}>
 
                   {/* Item row */}
-                  <div className="flex items-center gap-3 px-3 py-2.5">
-                    <span style={{ fontSize: 20, flexShrink: 0 }}>{getItemIcon(item.name, item.category)}</span>
+                  <div
+                    className="px-3 py-2.5"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '30px minmax(0, 1fr) 74px 52px 40px 52px',
+                      alignItems: 'center',
+                      columnGap: 8,
+                    }}
+                  >
+                    <span style={{ fontSize: 20, width: 30, textAlign: 'center' }}>{getItemIcon(item.name, item.category)}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: item.available ? 'var(--text-1)' : 'var(--text-3)' }}>{item.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -395,20 +408,24 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                     </div>
 
                     {/* Inline price */}
-                    <InlinePrice value={item.price} onSave={price => savePrice(item, price)} />
+                    <div style={{ width: 74, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                      <InlinePrice value={item.price} onSave={price => savePrice(item, price)} />
+                    </div>
 
                     {/* Availability toggle */}
-                    <Toggle
-                      checked={item.available}
-                      onChange={() => toggleAvailability(item)}
-                      disabled={togglingId === item.id}
-                    />
+                    <div style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <Toggle
+                        checked={item.available}
+                        onChange={() => toggleAvailability(item)}
+                        disabled={togglingId === item.id}
+                      />
+                    </div>
 
                     {/* Edit button */}
                     <button
                       onClick={() => editingId === item.id ? cancelEdit() : startEdit(item)}
                       className="flex items-center justify-center rounded-lg transition-colors"
-                      style={{ width: 28, height: 28, background: editingId === item.id ? 'rgba(170,48,26,0.1)' : 'var(--border)', color: editingId === item.id ? '#aa301a' : 'var(--text-3)', flexShrink: 0 }}
+                      style={{ width: 30, height: 30, margin: '0 auto', background: editingId === item.id ? 'rgba(170,48,26,0.1)' : 'var(--border)', color: editingId === item.id ? '#aa301a' : 'var(--text-3)', flexShrink: 0 }}
                       title="Edit item"
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -419,7 +436,7 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
 
                     {/* Delete */}
                     {confirmDeleteId === item.id ? (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 justify-end" style={{ width: 52 }}>
                         <button
                           onClick={() => deleteItem(item.id)}
                           disabled={deletingId === item.id}
@@ -437,16 +454,18 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setConfirmDeleteId(item.id)}
-                        className="flex items-center justify-center rounded-lg transition-colors"
-                        style={{ width: 28, height: 28, background: 'var(--border)', color: 'var(--text-3)', flexShrink: 0 }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--text-3)' }}
-                        title="Delete item"
-                      >
-                        <TrashIcon size={11} />
-                      </button>
+                      <div style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <button
+                          onClick={() => setConfirmDeleteId(item.id)}
+                          className="flex items-center justify-center rounded-lg transition-colors"
+                          style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', flexShrink: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--text-3)' }}
+                          title="Delete item"
+                        >
+                          <TrashIcon size={11} />
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -954,7 +973,7 @@ function ItemModifierModal({ item, onConfirm, onClose, addons = [] }) {
               <p className="font-bold mt-1" style={{ fontSize: 15, color: '#aa301a' }}>${item.price.toFixed(2)}</p>
             </div>
           </div>
-          <button onClick={onClose} className="flex items-center justify-center rounded-full flex-shrink-0" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)' }}>
+          <button onClick={onClose} className="rounded-full flex-shrink-0" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', display: 'inline-grid', placeItems: 'center', padding: 0, lineHeight: 0 }}>
             <XIcon size={14} />
           </button>
         </div>
@@ -1086,18 +1105,18 @@ function ItemTile({ item, qty, onTap, onDelete }) {
           border: qty > 0 ? `2px solid ${catColor}` : '1px solid var(--border)',
           borderRadius: 16,
           boxShadow: qty > 0
-            ? `0 0 0 3px ${catColor}22, 0 2px 10px rgba(0,0,0,0.08)`
-            : 'var(--shadow-sm)',
+            ? `0 0 0 3px ${catColor}1a, 0 4px 14px rgba(15,23,42,0.08)`
+            : 'var(--shadow-xs)',
           cursor: item.available && !confirmDel ? 'pointer' : 'not-allowed',
           opacity: item.available ? 1 : 0.38,
-          minHeight: 124,
+          minHeight: 118,
           transform: hovered && item.available && !confirmDel ? 'translateY(-2px)' : 'translateY(0)',
         }}
       >
         {/* Colored top stripe — the category's unique color */}
-        <div style={{ height: 4, background: catColor, flexShrink: 0, borderRadius: '16px 16px 0 0' }} />
+        <div style={{ height: 3, background: catColor, flexShrink: 0, borderRadius: '16px 16px 0 0' }} />
 
-        <div className="flex flex-col flex-1 p-3">
+        <div className="flex flex-col flex-1" style={{ padding: '12px 12px 11px' }}>
           {/* Icon + qty badge row */}
           <div className="flex items-start justify-between mb-1.5">
             <div
@@ -1246,8 +1265,8 @@ function ChargeModal({ total, onConfirm, onClose, loading }) {
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center rounded-full flex-shrink-0"
-            style={{ width: 32, height: 32, background: 'var(--border)', color: 'var(--text-3)' }}
+            className="rounded-full flex-shrink-0"
+            style={{ width: 32, height: 32, background: 'var(--border)', color: 'var(--text-3)', display: 'inline-grid', placeItems: 'center', padding: 0, lineHeight: 0 }}
           >
             <XIcon size={14} />
           </button>
@@ -1587,6 +1606,7 @@ export default function POSOrder() {
   }, [restaurantAddressStr])
 
   const categories = ['All', ...new Set(menuItems.map(i => i.category))]
+  const availableCount = menuItems.filter(item => item.available).length
 
   const filtered = menuItems.filter(item => {
     const matchCat = activeCategory === 'All' || item.category === activeCategory
@@ -1684,100 +1704,115 @@ export default function POSOrder() {
         />
       )}
 
-      {/* ── Three-panel POS layout ── */}
-      <div className="flex" style={{ height: '100vh', overflow: 'hidden' }}>
-
-        {/* Panel 1: Category sidebar */}
-        <div className="flex flex-col pt-3 pb-3 flex-shrink-0" style={{ width: 192, overflowY: 'auto', background: 'var(--sidebar-bg)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="px-4 pb-2 text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.28)' }}>Categories</p>
-          <div className="flex flex-col gap-0.5 px-2">
-            {categories.map(cat => {
-              const active = activeCategory === cat
-              const count = cat === 'All' ? menuItems.length : menuItems.filter(i => i.category === cat).length
-              const color = cat === 'All' ? '#aa301a' : getCategoryColor(cat)
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  title={cat}
-                  className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-left transition-all duration-150 relative overflow-hidden"
-                  style={{
-                    background: active ? `${color}22` : 'transparent',
-                    border: active ? `1px solid ${color}44` : '1px solid transparent',
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-                >
-                  {/* Colored left accent bar */}
-                  <div style={{ position: 'absolute', left: 0, top: 6, bottom: 6, width: 3, borderRadius: 2, background: active ? color : 'transparent' }} />
-
-                  {/* Category icon in a colored circle */}
-                  <div
-                    className="flex items-center justify-center rounded-lg flex-shrink-0"
-                    style={{ width: 28, height: 28, background: active ? `${color}30` : 'rgba(255,255,255,0.06)', fontSize: 13 }}
-                  >
-                    {cat === 'All' ? '🍴' : getCategoryIcon(cat)}
-                  </div>
-
-                  {/* Full label — no truncation, wraps if very long */}
-                  <span
-                    className="flex-1 font-semibold leading-tight"
-                    style={{ fontSize: 12, color: active ? '#fff' : 'rgba(255,255,255,0.6)', wordBreak: 'break-word' }}
-                  >
-                    {cat}
-                  </span>
-
-                  {/* Count badge */}
-                  <span
-                    className="font-bold flex-shrink-0 rounded-full px-1.5"
-                    style={{
-                      fontSize: 10,
-                      minWidth: 20,
-                      textAlign: 'center',
-                      background: active ? `${color}40` : 'rgba(255,255,255,0.08)',
-                      color: active ? '#fff' : 'rgba(255,255,255,0.35)',
-                    }}
-                  >
-                    {count}
-                  </span>
-                </button>
-              )
-            })}
+      {/* ── POS workspace ── */}
+      <div className="pos-workspace">
+        <div className="pos-page-header">
+          <div className="pos-page-header-copy">
+            <div className="pos-page-header-icon">
+              <OrdersIcon size={21} />
+            </div>
+            <div>
+              <h1 className="pos-page-header-title">POS Terminal</h1>
+              <p className="pos-page-header-subtitle">
+                {menuItems.length} menu items · {totalQty === 0 ? 'no active ticket' : `${totalQty} item${totalQty !== 1 ? 's' : ''} on ticket`}
+              </p>
+            </div>
+          </div>
+          <div className="pos-page-header-actions">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="btn-secondary"
+              style={{ padding: '10px 16px', borderRadius: 12 }}
+            >
+              <SettingsIcon size={14} />
+              Settings
+            </button>
+            <button
+              onClick={clearCart}
+              disabled={cart.length === 0}
+              className="btn-primary"
+              style={{ padding: '11px 18px', borderRadius: 12 }}
+            >
+              <PlusIcon size={14} />
+              New Order
+            </button>
           </div>
         </div>
 
-        {/* Panel 2: Item grid */}
-        <div className="flex flex-col flex-1 min-w-0" style={{ background: 'var(--bg)' }}>
-          <div className="px-4 pt-4 pb-3 flex-shrink-0 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
-            <div className="flex-1">
-              <h1 className="font-bold" style={{ fontSize: 17, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
-                {activeCategory === 'All' ? 'All Items' : activeCategory}
-              </h1>
-              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {filtered.filter(i => i.available).length} available · {filtered.length - filtered.filter(i => i.available).length > 0 ? `${filtered.length - filtered.filter(i => i.available).length} unavailable` : 'tap to add'}
-              </p>
-            </div>
-            <div className="relative" style={{ width: 180 }}>
-              <SearchIcon size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
-              <input className="input" style={{ paddingLeft: 30, fontSize: 13, height: 34 }} placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
-            </div>
-            {/* Settings gear button */}
-            <button
-              onClick={() => setShowSettings(true)}
-              title="POS Settings"
-              className="flex items-center justify-center rounded-xl transition-all duration-150"
-              style={{ width: 34, height: 34, background: 'var(--card-bg)', border: '1px solid var(--border)', color: 'var(--text-2)', flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#aa301a'; e.currentTarget.style.color = '#aa301a' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-2)' }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-              </svg>
-            </button>
+        {/* Panel 1: Item grid */}
+        <div className="pos-main-column">
+          <div className="pos-overview-row" style={{ animation: 'fadeInUp 0.3s ease 0.03s both' }}>
+            {[
+              ['Menu Items', menuItems.length],
+              ['Available', availableCount],
+              ['Categories', Math.max(categories.length - 1, 0)],
+              ['Ticket Items', totalQty],
+            ].map(([label, value]) => (
+              <div key={label} className="pos-summary-card">
+                <div className="pos-summary-label">{label}</div>
+                <div className="pos-summary-value">{value}</div>
+              </div>
+            ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="pos-control-card" style={{ animation: 'fadeInUp 0.3s ease 0.06s both' }}>
+            <div className="pos-control-header">
+              <div>
+                <h2 className="pos-section-title">{activeCategory === 'All' ? 'All Items' : activeCategory}</h2>
+                <p className="pos-section-subtitle">
+                  {filtered.filter(i => i.available).length} available · {filtered.length - filtered.filter(i => i.available).length > 0 ? `${filtered.length - filtered.filter(i => i.available).length} unavailable` : 'tap an item to add'}
+                </p>
+              </div>
+              <div className="pos-search-wrap">
+                <SearchIcon size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
+                <input className="input" style={{ paddingLeft: 30, fontSize: 13, height: 36 }} placeholder="Search menu..." value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="pos-category-strip">
+              <div className="pos-category-label">Categories</div>
+              <div className="pos-category-scroll">
+                {categories.map(cat => {
+                  const active = activeCategory === cat
+                  const count = cat === 'All' ? menuItems.length : menuItems.filter(i => i.category === cat).length
+                  const color = cat === 'All' ? '#aa301a' : getCategoryColor(cat)
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      title={cat}
+                      className="pos-category-chip"
+                      style={{
+                        background: active ? `${color}10` : 'var(--surface-2)',
+                        borderColor: active ? `${color}5c` : 'transparent',
+                        color: active ? color : 'var(--text-2)',
+                        boxShadow: active ? `0 8px 18px ${color}14` : 'none',
+                      }}
+                    >
+                      <span
+                        className="pos-category-chip-icon"
+                        style={{ background: active ? `${color}18` : 'var(--card-bg)' }}
+                      >
+                        {cat === 'All' ? '🍴' : getCategoryIcon(cat)}
+                      </span>
+                      <span className="pos-category-chip-name">{cat}</span>
+                      <span
+                        className="pos-category-chip-count"
+                        style={{
+                          background: active ? `${color}18` : 'rgba(29,29,31,0.06)',
+                          color: active ? color : 'var(--text-3)',
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="pos-items-card" style={{ animation: 'fadeInUp 0.3s ease 0.09s both' }}>
             {loading ? (
               <div className="flex items-center justify-center py-20"><SpinnerIcon size={24} /></div>
             ) : filtered.length === 0 ? (
@@ -1787,7 +1822,7 @@ export default function POSOrder() {
                 <button onClick={() => setShowSettings(true)} className="mt-3 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(170,48,26,0.08)', color: '#aa301a' }}>Open Settings to add items</button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(148px, 1fr))', gap: 12 }}>
+              <div className="pos-item-grid">
                 {filtered.map(item => (
                   <ItemTile key={item.id} item={item} qty={getCartQty(item.id)} onTap={setSelectedItem} onDelete={handleDeleteItem} />
                 ))}
@@ -1797,7 +1832,7 @@ export default function POSOrder() {
         </div>
 
         {/* Panel 3: Order ticket */}
-        <div className="flex flex-col flex-shrink-0" style={{ width: 320, borderLeft: '1px solid var(--border)', background: 'var(--card-bg)', overflow: 'hidden' }}>
+        <div className="pos-ticket-card">
           <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
             <div>
               <h2 className="font-bold" style={{ fontSize: 15, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Current Order</h2>
@@ -1819,14 +1854,15 @@ export default function POSOrder() {
                 <button
                   key={val}
                   onClick={() => setOrderType(val)}
-                  className="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex flex-col items-center gap-0.5"
+                  className="flex-1 rounded-xl text-xs font-semibold transition-all duration-150 inline-flex items-center justify-center gap-1.5"
                   style={{
+                    minHeight: 38,
                     background: orderType === val ? '#aa301a' : 'var(--border)',
                     color: orderType === val ? '#fff' : 'var(--text-2)',
                     boxShadow: orderType === val ? '0 2px 8px rgba(170,48,26,0.25)' : 'none',
                   }}
                 >
-                  <span style={{ fontSize: 14 }}>{icon}</span>
+                  <span style={{ fontSize: 13 }}>{icon}</span>
                   {label}
                 </button>
               ))}

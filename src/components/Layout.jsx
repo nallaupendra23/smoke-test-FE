@@ -58,36 +58,48 @@ function MapPinIcon({ size = 11 }) {
 }
 
 /* ── Location Switcher ────────────────────────────────────────────── */
-function LocationSwitcher() {
+function LocationSwitcher({ variant = 'surface' }) {
   const { locations, activeLocation, setActiveLocation } = useLocationCtx()
   const [open, setOpen] = useState(false)
+  const sidebar = variant === 'sidebar' || variant === 'account'
+  const account = variant === 'account'
+  const footerSwitcher = variant === 'sidebar'
 
   if (!locations || locations.length <= 1) return null
 
   return (
-    <div className="relative px-3 mb-2">
+    <div className={`relative location-switcher ${account ? 'account-location-switcher' : sidebar ? 'sidebar-location-switcher' : 'top-location-switcher'}`}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors"
+        className={account ? 'account-location-button' : sidebar ? 'sidebar-location-button' : 'top-location-button'}
         style={{
-          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: sidebar
+            ? (open ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.05)')
+            : (open ? 'rgba(170,48,26,0.10)' : 'rgba(255,255,255,0.76)'),
+          border: sidebar
+            ? '1px solid rgba(255,255,255,0.08)'
+            : (open ? '1px solid rgba(170,48,26,0.24)' : '1px solid var(--border)'),
         }}
       >
-        <MapPinIcon size={11} style={{ color: '#ffb4a5', flexShrink: 0 }} />
-        <span className="flex-1 text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.82)' }}>
+        <MapPinIcon size={12} style={{ color: sidebar ? '#ffb4a5' : 'var(--primary)', flexShrink: 0 }} />
+        <span className="flex-1 text-xs font-semibold truncate" style={{ color: sidebar ? 'rgba(255,255,255,0.76)' : 'var(--text-2)' }}>
           {activeLocation?.name || 'Select location'}
         </span>
-        <ChevronDownIcon size={11} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+        <ChevronDownIcon size={11} style={{ color: sidebar ? 'rgba(255,255,255,0.36)' : 'var(--text-3)', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
       </button>
 
       {open && (
         <div
-          className="absolute left-3 right-3 rounded-xl overflow-hidden z-50 mt-1"
+          className="absolute rounded-xl overflow-hidden z-50"
           style={{
-            background: '#1c1c1e',
-            border: '1px solid rgba(255,255,255,0.1)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            left: 0,
+            right: sidebar ? 0 : 'auto',
+            width: sidebar ? '100%' : 260,
+            top: footerSwitcher ? 'auto' : 'calc(100% + 8px)',
+            bottom: footerSwitcher ? 'calc(100% + 8px)' : 'auto',
+            background: sidebar ? '#101c2c' : 'var(--card-bg)',
+            border: sidebar ? '1px solid rgba(255,255,255,0.10)' : '1px solid var(--border)',
+            boxShadow: sidebar ? '0 16px 36px rgba(0,0,0,0.35)' : 'var(--shadow-lg)',
           }}
         >
           {locations.map(loc => (
@@ -97,24 +109,24 @@ function LocationSwitcher() {
               className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors"
               style={{
                 background: activeLocation?.id === loc.id ? 'rgba(170,48,26,0.18)' : 'transparent',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                borderBottom: sidebar ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)',
               }}
-              onMouseEnter={e => { if (activeLocation?.id !== loc.id) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+              onMouseEnter={e => { if (activeLocation?.id !== loc.id) e.currentTarget.style.background = sidebar ? 'rgba(255,255,255,0.06)' : 'var(--surface-2)' }}
               onMouseLeave={e => { if (activeLocation?.id !== loc.id) e.currentTarget.style.background = 'transparent' }}
             >
-              <MapPinIcon size={10} style={{ color: activeLocation?.id === loc.id ? '#ffb4a5' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+              <MapPinIcon size={11} style={{ color: activeLocation?.id === loc.id ? '#ffb4a5' : (sidebar ? 'rgba(255,255,255,0.36)' : 'var(--text-3)'), flexShrink: 0 }} />
               <div className="min-w-0">
-                <div className="text-xs font-semibold truncate" style={{ color: activeLocation?.id === loc.id ? '#ffb4a5' : 'rgba(255,255,255,0.78)' }}>
+                <div className="text-xs font-semibold truncate" style={{ color: activeLocation?.id === loc.id ? '#ffb4a5' : (sidebar ? 'rgba(255,255,255,0.78)' : 'var(--text-2)') }}>
                   {loc.name}
                 </div>
                 {loc.address && (
-                  <div className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.28)', fontSize: 10 }}>
+                  <div className="text-xs truncate mt-0.5" style={{ color: sidebar ? 'rgba(255,255,255,0.32)' : 'var(--text-3)', fontSize: 10 }}>
                     {loc.address}
                   </div>
                 )}
               </div>
               {activeLocation?.id === loc.id && (
-                <span className="ml-auto text-xs" style={{ color: '#ffb4a5', fontSize: 10 }}>✓</span>
+                <span className="ml-auto text-xs" style={{ color: sidebar ? '#ffb4a5' : 'var(--primary)', fontSize: 10 }}>✓</span>
               )}
             </button>
           ))}
@@ -129,7 +141,8 @@ export default function Layout({ children }) {
   const { owner, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const { activeLocation } = useLocationCtx()
+  const { locations } = useLocationCtx()
+  const hasMultipleLocations = locations?.length > 1
 
   const handleLogout = () => {
     logout()
@@ -142,51 +155,19 @@ export default function Layout({ children }) {
     : 'AI'
 
   return (
-    <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
-
-      {/* ── Sidebar ── */}
-      <aside
-        className="flex flex-col flex-shrink-0"
-        style={{
-          width: '232px',
-          background: 'var(--sidebar-bg)',
-          borderRight: '1px solid var(--sidebar-border)',
-        }}
-      >
-        {/* Logo */}
-        <div
-          className="flex items-center gap-3 px-5 py-5"
-          style={{ borderBottom: '1px solid var(--sidebar-border)' }}
-        >
-          <div
-            className="flex items-center justify-center rounded-xl flex-shrink-0"
-            style={{
-              width: 34,
-              height: 34,
-              background: 'linear-gradient(135deg, #aa301a, #cb4830)',
-              boxShadow: '0 4px 12px rgba(170,48,26,0.40)',
-            }}
-          >
-            <PhoneIcon size={15} className="text-white" />
+    <div className="app-shell" style={{ background: 'var(--bg)' }}>
+      <aside className="app-sidebar">
+        <div className="app-sidebar-brand">
+          <div className="app-sidebar-logo">
+            <PhoneIcon size={16} className="text-white" />
           </div>
-          <div>
-            <div
-              className="font-bold text-sm leading-tight"
-              style={{ color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.03em' }}
-            >
-              RingZ.ai
-            </div>
-            <div
-              className="text-xs leading-tight mt-0.5"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
-            >
-              Never miss a customer call again
-            </div>
+          <div className="min-w-0">
+            <div className="app-sidebar-title">RingZ.ai</div>
+            <div className="app-sidebar-subtitle">Restaurant voice agent</div>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+        <nav className="app-sidebar-nav" aria-label="Primary navigation">
           {navItems.map((item) => {
             const Icon = item.icon
             const active = location.pathname === item.path
@@ -194,95 +175,64 @@ export default function Layout({ children }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`nav-item ${active ? 'active' : ''}`}
+                className={`app-sidebar-item ${active ? 'active' : ''}`}
               >
                 <Icon size={16} />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             )
           })}
         </nav>
 
-        {/* User section */}
-        <div
-          className="px-3 pb-4 pt-3"
-          style={{ borderTop: '1px solid var(--sidebar-border)' }}
-        >
-          {/* User card */}
-          <div
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-3"
-            style={{ background: 'rgba(255,255,255,0.05)' }}
-          >
-            <div
-              className="flex items-center justify-center rounded-lg text-xs font-bold text-white flex-shrink-0"
-              style={{
-                width: 32,
-                height: 32,
-                background: 'linear-gradient(135deg, #aa301a, #cb4830)',
-                fontSize: 11,
-              }}
+        <div className="app-sidebar-footer">
+          {hasMultipleLocations && (
+            <div className="app-sidebar-location-card">
+              <div className="app-sidebar-location-label">Location</div>
+              <LocationSwitcher variant="sidebar" />
+            </div>
+          )}
+
+          <div className={`app-sidebar-account-card ${location.pathname === '/account' ? 'active' : ''}`}>
+            <Link
+              to="/account"
+              className="app-sidebar-account-main"
+              title="Account settings"
             >
-              {initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div
-                className="text-xs font-semibold truncate"
-                style={{ color: 'rgba(255,255,255,0.88)' }}
-              >
-                {owner?.restaurant_name}
-              </div>
-              <div
-                className="text-xs truncate mt-0.5"
-                style={{ color: 'rgba(255,255,255,0.3)' }}
-              >
-                {owner?.email}
-              </div>
-            </div>
+              <span className="app-sidebar-avatar">{initials}</span>
+              <span className="app-sidebar-account-copy">
+                <span className="app-sidebar-account-name">{owner?.restaurant_name}</span>
+                <span className="app-sidebar-account-email">{owner?.email}</span>
+              </span>
+            </Link>
           </div>
 
-          {/* Plan badge */}
           <Link
             to="/subscription?details=plan"
-            className="flex items-center justify-between px-1 mb-3 rounded-lg py-1 transition-colors"
-            style={{ textDecoration: 'none' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            className="app-sidebar-plan"
+            title="Subscription plan"
           >
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>Plan</span>
-            <span
-              className="text-xs font-semibold capitalize px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(170,48,26,0.18)', color: '#ffb4a5' }}
-            >
-              {owner?.plan || 'free'}
-            </span>
+            <span>Plan</span>
+            <strong>{owner?.plan || 'free'}</strong>
           </Link>
 
-          {/* Sign out */}
           <button
             onClick={handleLogout}
-            className="nav-item w-full text-left"
-            style={{ color: 'rgba(255,255,255,0.3)' }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
-              e.currentTarget.style.color = '#fca5a5'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = 'rgba(255,255,255,0.3)'
-            }}
+            className="app-sidebar-signout"
+            title="Sign out"
           >
-            <LogoutIcon size={14} />
-            Sign out
+            <LogoutIcon size={15} />
+            <span>Sign out</span>
           </button>
         </div>
       </aside>
 
-      {/* ── Main content ── */}
-      <main className="app-main flex-1 overflow-auto">
-        <div className="page-enter">
-          {children}
-        </div>
-      </main>
+      <div className="app-content-shell">
+        <main className="app-main">
+          <div className="page-enter">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

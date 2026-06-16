@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:local-preview": "node scripts/build-local-preview.mjs",
+    "serve:local-preview": "node scripts/local-preview-proxy.mjs"
   },
   "dependencies": {
     "axios": "^1.7.7",
