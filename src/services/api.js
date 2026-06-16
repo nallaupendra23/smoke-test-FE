@@ -119,6 +119,12 @@ export const restaurantApi = {
   update: (data) => api.put('/restaurant', data),
 }
 
+// Agent Settings
+export const agentApi = {
+  get: () => api.get('/restaurant/agent-settings'),
+  update: (data) => api.put('/restaurant/agent-settings', data),
+}
+
 // Subscription
 export const subscriptionApi = {
   getPlans: () => api.get('/subscription/plans'),

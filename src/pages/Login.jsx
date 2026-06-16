@@ -226,10 +226,11 @@ export default function Login() {
                         mark_email_read
                       </span>
                     </div>
-                    <p className="font-semibold text-[#1d1d1f] mb-2">Check your inbox</p>
+                    <p className="font-semibold text-[#1d1d1f] mb-2">Request received</p>
                     <p className="text-[13px] text-[#8e8e93] leading-relaxed max-w-[240px] mx-auto">
-                      If <span className="text-[#1d1d1f] font-medium">{email}</span> has an account,
-                      you'll receive a reset link shortly.
+                      If <span className="text-[#1d1d1f] font-medium">{email}</span> is registered,
+                      a reset link is on its way. If you don't see it, double-check the address or{' '}
+                      <Link to="/signup" className="text-[#b63a23] font-semibold hover:underline">create an account</Link>.
                     </p>
                   </div>
                 ) : (

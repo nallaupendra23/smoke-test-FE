@@ -21,9 +21,9 @@ COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
 
 USER nginx
-EXPOSE 80
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost/health || exit 1
+    CMD wget -qO- http://localhost:8080/health || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
