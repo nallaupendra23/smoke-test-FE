@@ -441,6 +441,7 @@ export default function Settings() {
 
   // Account tab
   const [account, setAccount] = useState({ email: '', phone: '' })
+  const [aiPhoneNumber, setAiPhoneNumber] = useState(null) // Twilio number assigned by admin
   const [emailForm, setEmailForm] = useState({ new_email: '', password: '', code: '' })
   const [phoneForm, setPhoneForm] = useState({ phone: '', code: '' })
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm_password: '' })
@@ -498,6 +499,7 @@ export default function Settings() {
       const me = meRes.data
       const accountPhone = me.phone || r.phone || ''
       setAccount({ email: me.email || '', phone: accountPhone })
+      setAiPhoneNumber(r.twilio_number || null)
       setEmailForm(prev => ({ ...prev, new_email: me.email || '' }))
       setPhoneForm(prev => ({ ...prev, phone: accountPhone }))
       if (subRes?.data?.current_plan) setCurrentPlan(subRes.data.current_plan)
@@ -1097,6 +1099,28 @@ export default function Settings() {
                   ))}
                 </div>
               </div>
+
+              {/* AI Phone Number — shown when admin has assigned a Twilio number */}
+              {aiPhoneNumber && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(9,76,178,0.08) 0%, rgba(9,76,178,0.03) 100%)', border: '1.5px solid rgba(9,76,178,0.20)', borderRadius: 16, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(9,76,178,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#094cb2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.4 2.7h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.09a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#094cb2', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Your AI Phone Number</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#094cb2', letterSpacing: '0.04em', fontFamily: 'monospace' }}>{aiPhoneNumber}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 3 }}>Forward your restaurant number to this line to activate your AI agent</div>
+                  </div>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(aiPhoneNumber); setToast({ message: 'Number copied to clipboard', type: 'success' }) }}
+                    style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 10, border: '1.5px solid rgba(9,76,178,0.25)', background: 'rgba(9,76,178,0.08)', color: '#094cb2', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              )}
 
               {/* Security — Apple-style disclosure list */}
               <div>
