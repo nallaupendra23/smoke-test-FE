@@ -597,6 +597,8 @@ export default function MenuManager() {
               Sync from KB
             </button>
             <button
+              type="button"
+              data-testid="add-item-button"
               onClick={openAddModal}
               className="btn-primary"
               style={{ borderRadius: 12, padding: '10px 18px' }}
