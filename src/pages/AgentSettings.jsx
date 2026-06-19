@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 import { AgentIcon, CheckIcon } from '../components/Icons'
-
-const STORAGE_KEY = 'agent_settings'
+import { agentApi } from '../services/api'
 
 const DEFAULT_AGENT = {
   personality: 'friendly',
@@ -172,21 +171,48 @@ export default function AgentSettings() {
     scripts: false,
     rules: false,
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-      if (stored) setSettings({ ...DEFAULT_AGENT, ...stored })
-    } catch {}
+    agentApi.get()
+      .then(res => {
+        setSettings({ ...DEFAULT_AGENT, ...res.data })
+      })
+      .catch(() => {
+        // Fall back to localStorage if the request fails (e.g. not logged in yet)
+        try {
+          const stored = JSON.parse(localStorage.getItem('agent_settings') || 'null')
+          if (stored) setSettings({ ...DEFAULT_AGENT, ...stored })
+        } catch {}
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
   const toggleSection = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))
 
-  const save = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+  const save = async () => {
+    setError(null)
+    try {
+      await agentApi.update(settings)
+      // Mirror to localStorage as offline fallback
+      localStorage.setItem('agent_settings', JSON.stringify(settings))
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch {
+      setError('Could not save — please try again.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="app-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+          <p style={{ color: 'var(--text-3)', fontSize: 14 }}>Loading agent settings…</p>
+        </div>
+      </Layout>
+    )
   }
 
   return (
@@ -199,15 +225,20 @@ export default function AgentSettings() {
           accent="var(--accent-cyan)"
           accentBg="rgba(8,145,178,0.11)"
         >
-          <button
-            type="button"
-            onClick={save}
-            className="btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 12 }}
-          >
-            <CheckIcon size={14} />
-            {saved ? 'Saved' : 'Save Agent'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {error && (
+              <span style={{ fontSize: 12, color: 'var(--error, #c0392b)', fontWeight: 600 }}>{error}</span>
+            )}
+            <button
+              type="button"
+              onClick={save}
+              className="btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 12 }}
+            >
+              <CheckIcon size={14} />
+              {saved ? 'Saved' : 'Save Agent'}
+            </button>
+          </div>
         </PageHeader>
 
         <MobileAccordionSection

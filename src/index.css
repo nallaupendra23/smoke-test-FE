@@ -266,9 +266,15 @@
     animation: pulseDot 2s ease-in-out infinite;
   }
 
-  /* Page wrapper */
+  /* Page wrapper.
+     NOTE: do NOT use `forwards` fill-mode here. fadeInUp ends on
+     `transform: translateY(0)`, and any non-`none` transform retained on
+     this wrapper makes it the containing block for position:fixed children
+     — which traps modals (Add Order, Add Item) inside the scroll area and
+     clips them out of view. Letting the transform revert to `none` after
+     the animation keeps fixed-position modals anchored to the viewport. */
   .page-enter {
-    animation: fadeInUp 0.3s ease forwards;
+    animation: fadeInUp 0.3s ease;
   }
 
   .app-shell {

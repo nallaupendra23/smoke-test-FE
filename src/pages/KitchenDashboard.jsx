@@ -1016,6 +1016,8 @@ export default function KitchenDashboard() {
               </div>
 
               <button
+                type="button"
+                data-testid="add-order-button"
                 onClick={() => setShowModal(true)}
                 className="btn-primary"
                 style={{

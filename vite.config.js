@@ -29,4 +29,9 @@ export default defineConfig({
       '/api': proxyOptions(appApiTarget, 'App API'),
     },
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.js'],
+  },
 })

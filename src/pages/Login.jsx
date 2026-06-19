@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SpinnerIcon } from '../components/Icons'
+import { authApi } from '../services/api'
 import signupBg from '../assets/signup-bg-robot-restaurant.png'
 
 const field =
@@ -50,9 +51,13 @@ export default function Login() {
   }
 
   const handleForgot = async (e) => {
-    e.preventDefault(); setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
-    setForgotSent(true); setLoading(false)
+    e.preventDefault(); setError(''); setLoading(true)
+    try {
+      await authApi.forgotPassword(email)
+      setForgotSent(true)
+    } catch (err) {
+      setError(apiErr(err, 'Something went wrong. Please try again.'))
+    } finally { setLoading(false) }
   }
 
   return (
@@ -221,10 +226,11 @@ export default function Login() {
                         mark_email_read
                       </span>
                     </div>
-                    <p className="font-semibold text-[#1d1d1f] mb-2">Check your inbox</p>
+                    <p className="font-semibold text-[#1d1d1f] mb-2">Request received</p>
                     <p className="text-[13px] text-[#8e8e93] leading-relaxed max-w-[240px] mx-auto">
-                      If <span className="text-[#1d1d1f] font-medium">{email}</span> has an account,
-                      you'll receive a reset link shortly.
+                      If <span className="text-[#1d1d1f] font-medium">{email}</span> is registered,
+                      a reset link is on its way. If you don't see it, double-check the address or{' '}
+                      <Link to="/signup" className="text-[#b63a23] font-semibold hover:underline">create an account</Link>.
                     </p>
                   </div>
                 ) : (
