@@ -488,8 +488,8 @@ export default function Settings() {
         phone: loc ? (loc.phone || '') : (r.phone || ''),
         estimated_wait_minutes: r.estimated_wait_minutes || '20',
         timezone: loc?.timezone || r.timezone || 'America/New_York',
-        delivery_radius_miles: r.delivery_radius_miles ?? 5,
-        delivery_fee: r.delivery_fee ?? 0,
+        delivery_radius_miles: loc?.delivery_radius_miles ?? r.delivery_radius_miles ?? 5,
+        delivery_fee: loc?.delivery_fee ?? r.delivery_fee ?? 0,
       })
       if (r.hours) setHours(parseOldHours(r.hours))
       if (r.employees) {
@@ -522,6 +522,8 @@ export default function Settings() {
         address: form.address,
         phone: form.phone,
         timezone: form.timezone,
+        delivery_radius_miles: form.delivery_radius_miles,
+        delivery_fee: form.delivery_fee,
       }
       const restaurantPayload = {
         estimated_wait_minutes: form.estimated_wait_minutes,
@@ -933,23 +935,25 @@ export default function Settings() {
                 const h = hours[day] || DEFAULT_HOURS[day]
                 return (
                   <div key={day}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', background: h.closed ? 'var(--surface-2)' : 'transparent', transition: 'background 0.15s' }}>
-                      <span style={{ width: 86, fontSize: 14, fontWeight: h.closed ? 400 : 500, color: h.closed ? 'var(--text-3)' : 'var(--text-1)', flexShrink: 0 }}>{day}</span>
+                    <div className="settings-hours-row" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', background: h.closed ? 'var(--surface-2)' : 'transparent', transition: 'background 0.15s' }}>
+                      <span className="settings-hours-day" style={{ width: 86, fontSize: 14, fontWeight: h.closed ? 400 : 500, color: h.closed ? 'var(--text-3)' : 'var(--text-1)', flexShrink: 0 }}>{day}</span>
                       <ToggleSwitch size="sm" checked={!h.closed} onChange={v => setHours({ ...hours, [day]: { ...h, closed: !v } })} />
                       {!h.closed ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                        <div className="settings-hours-time-range" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                           <input type="time" value={h.open}
                             onChange={e => setHours({ ...hours, [day]: { ...h, open: e.target.value } })}
+                            className="settings-hours-time-input"
                             style={{ padding: '6px 10px', fontSize: 13, fontFamily: 'inherit', border: '1px solid var(--border)', borderRadius: 9, outline: 'none', background: 'var(--surface-2)', color: 'var(--text-1)', fontWeight: 500 }}
                           />
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                          <svg className="settings-hours-time-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                           <input type="time" value={h.close}
                             onChange={e => setHours({ ...hours, [day]: { ...h, close: e.target.value } })}
+                            className="settings-hours-time-input"
                             style={{ padding: '6px 10px', fontSize: 13, fontFamily: 'inherit', border: '1px solid var(--border)', borderRadius: 9, outline: 'none', background: 'var(--surface-2)', color: 'var(--text-1)', fontWeight: 500 }}
                           />
                         </div>
                       ) : (
-                        <span style={{ flex: 1, textAlign: 'right', fontSize: 13, color: 'var(--text-3)', fontStyle: 'italic' }}>Closed</span>
+                        <span className="settings-hours-closed" style={{ flex: 1, textAlign: 'right', fontSize: 13, color: 'var(--text-3)', fontStyle: 'italic' }}>Closed</span>
                       )}
                     </div>
                     {i < DAYS.length - 1 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}

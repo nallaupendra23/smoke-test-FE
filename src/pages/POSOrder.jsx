@@ -307,7 +307,7 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
 
       {/* Drawer */}
       <div
-        className="fixed top-0 right-0 bottom-0 z-40 flex flex-col"
+        className="pos-settings-drawer fixed top-0 right-0 bottom-0 z-40 flex flex-col"
         style={{
           width: 500,
           background: 'var(--card-bg)',
@@ -317,8 +317,8 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="flex items-center gap-3">
+        <div className="pos-settings-header flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="pos-settings-title-row flex items-center gap-3">
             <div className="flex items-center justify-center rounded-xl" style={{ width: 34, height: 34, background: 'linear-gradient(135deg,#cb4830,#aa301a)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -329,18 +329,18 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>{items.length} items · manage your menu</p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-full" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', display: 'inline-grid', placeItems: 'center', padding: 0, lineHeight: 0 }}>
+          <button onClick={onClose} className="pos-settings-close rounded-full" style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', display: 'inline-grid', placeItems: 'center', padding: 0, lineHeight: 0 }}>
             <XIcon size={14} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="grid px-5 pt-4 pb-0 gap-2 flex-shrink-0" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+        <div className="pos-settings-tabs grid px-5 pt-4 pb-0 gap-2 flex-shrink-0" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
           {[['items', '🍽 Menu Items'], ['add', '＋ Add Item'], ['extras', '💲 Paid Extras']].map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className="px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150"
+              className="pos-settings-tab px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150"
               style={{
                 minHeight: 36,
                 background: tab === key ? '#aa301a' : 'var(--border)',
@@ -379,18 +379,18 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
             </p>
 
             {/* Item list */}
-            <div className="flex-1 overflow-y-auto px-5 pb-4">
+            <div className="pos-settings-list flex-1 overflow-y-auto px-5 pb-4">
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center py-12 text-center">
                   <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
                   <p className="text-sm font-medium" style={{ color: 'var(--text-3)' }}>No items found</p>
                 </div>
               ) : filtered.map(item => (
-                <div key={item.id} className="rounded-2xl mb-2 overflow-hidden" style={{ border: '1px solid var(--border)', background: editingId === item.id ? 'rgba(170,48,26,0.02)' : 'var(--bg)' }}>
+                <div key={item.id} className="pos-settings-item-card rounded-2xl mb-2 overflow-hidden" style={{ border: '1px solid var(--border)', background: editingId === item.id ? 'rgba(170,48,26,0.02)' : 'var(--bg)' }}>
 
                   {/* Item row */}
                   <div
-                    className="px-3 py-2.5"
+                    className="pos-settings-item-row px-3 py-2.5"
                     style={{
                       display: 'grid',
                       gridTemplateColumns: '30px minmax(0, 1fr) 74px 52px 40px 52px',
@@ -398,8 +398,8 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                       columnGap: 8,
                     }}
                   >
-                    <span style={{ fontSize: 20, width: 30, textAlign: 'center' }}>{getItemIcon(item.name, item.category)}</span>
-                    <div className="flex-1 min-w-0">
+                    <span className="pos-settings-item-icon" style={{ fontSize: 20, width: 30, textAlign: 'center' }}>{getItemIcon(item.name, item.category)}</span>
+                    <div className="pos-settings-item-info flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: item.available ? 'var(--text-1)' : 'var(--text-3)' }}>{item.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-xs px-1.5 py-0.5 rounded-md font-medium" style={{ background: 'var(--border)', color: 'var(--text-3)' }}>{item.category}</span>
@@ -408,12 +408,12 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                     </div>
 
                     {/* Inline price */}
-                    <div style={{ width: 74, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    <div className="pos-settings-price-cell" style={{ width: 74, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                       <InlinePrice value={item.price} onSave={price => savePrice(item, price)} />
                     </div>
 
                     {/* Availability toggle */}
-                    <div style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div className="pos-settings-toggle-cell" style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <Toggle
                         checked={item.available}
                         onChange={() => toggleAvailability(item)}
@@ -424,7 +424,7 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                     {/* Edit button */}
                     <button
                       onClick={() => editingId === item.id ? cancelEdit() : startEdit(item)}
-                      className="flex items-center justify-center rounded-lg transition-colors"
+                      className="pos-settings-icon-button flex items-center justify-center rounded-lg transition-colors"
                       style={{ width: 30, height: 30, margin: '0 auto', background: editingId === item.id ? 'rgba(170,48,26,0.1)' : 'var(--border)', color: editingId === item.id ? '#aa301a' : 'var(--text-3)', flexShrink: 0 }}
                       title="Edit item"
                     >
@@ -436,7 +436,7 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
 
                     {/* Delete */}
                     {confirmDeleteId === item.id ? (
-                      <div className="flex gap-1 justify-end" style={{ width: 52 }}>
+                      <div className="pos-settings-delete-confirm flex gap-1 justify-end" style={{ width: 52 }}>
                         <button
                           onClick={() => deleteItem(item.id)}
                           disabled={deletingId === item.id}
@@ -454,10 +454,10 @@ function POSSettingsPanel({ open, items, addons, onClose, onRefresh, onRefreshAd
                         </button>
                       </div>
                     ) : (
-                      <div style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <div className="pos-settings-delete-cell" style={{ width: 52, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <button
                           onClick={() => setConfirmDeleteId(item.id)}
-                          className="flex items-center justify-center rounded-lg transition-colors"
+                          className="pos-settings-icon-button flex items-center justify-center rounded-lg transition-colors"
                           style={{ width: 30, height: 30, background: 'var(--border)', color: 'var(--text-3)', flexShrink: 0 }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--text-3)' }}
@@ -1383,7 +1383,7 @@ function ChargeModal({ total, onConfirm, onClose, loading }) {
    Delivery Address Input — OpenStreetMap Nominatim autocomplete
    + Haversine delivery range check (no API key needed)
 ══════════════════════════════════════════════════════════════════ */
-function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRadius }) {
+function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRadius, onRangeChange }) {
   const debounceRef = useRef(null)
   const dropdownRef = useRef(null)
   const inputRef = useRef(null)
@@ -1403,10 +1403,32 @@ function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRad
     if (!value) {
       setRangeStatus('idle')
       setDistanceMiles(null)
+      onRangeChange?.('idle')
       setSuggestions([])
       setShowDropdown(false)
     }
-  }, [value])
+  }, [value, onRangeChange])
+
+  const updateRange = (status, distance = null) => {
+    setRangeStatus(status)
+    setDistanceMiles(distance)
+    onRangeChange?.(status)
+  }
+
+  const validateAddress = async (address) => {
+    if (!coordsRef.current || address.trim().length < 3) return
+    setSearching(true)
+    const coords = await geocodeAddress(address)
+    setSearching(false)
+    if (!coords) {
+      updateRange('idle', null)
+      return
+    }
+    const distMi = haversineKm(
+      coordsRef.current.lat, coordsRef.current.lng, coords.lat, coords.lng
+    ) * 0.621371
+    updateRange(distMi <= (radiusRef.current || 5) ? 'in' : 'out', distMi)
+  }
 
   // Close dropdown on click-outside
   useEffect(() => {
@@ -1423,8 +1445,7 @@ function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRad
   const handleInputChange = (e) => {
     const q = e.target.value
     onChange(q)
-    setRangeStatus('idle')
-    setDistanceMiles(null)
+    updateRange('idle', null)
     clearTimeout(debounceRef.current)
     if (q.length < 3) { setSuggestions([]); setShowDropdown(false); return }
     debounceRef.current = setTimeout(async () => {
@@ -1447,8 +1468,7 @@ function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRad
       const distMi = haversineKm(
         coordsRef.current.lat, coordsRef.current.lng, lat, lng
       ) * 0.621371
-      setDistanceMiles(distMi)
-      setRangeStatus(distMi <= (radiusRef.current || 5) ? 'in' : 'out')
+      updateRange(distMi <= (radiusRef.current || 5) ? 'in' : 'out', distMi)
     }
   }
 
@@ -1468,6 +1488,11 @@ function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRad
           value={value}
           onChange={handleInputChange}
           onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+          onBlur={() => {
+            if (rangeStatus === 'idle' && value.trim().length >= 3) {
+              validateAddress(value)
+            }
+          }}
           autoComplete="off"
         />
         {/* Right-side status icon */}
@@ -1545,7 +1570,7 @@ function DeliveryAddressInput({ value, onChange, restaurantCoords, restaurantRad
 export default function POSOrder() {
   const [menuItems, setMenuItems] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeCategory, setActiveCategory] = useState('')
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
@@ -1553,6 +1578,7 @@ export default function POSOrder() {
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [deliveryRangeStatus, setDeliveryRangeStatus] = useState('idle')
   const [notes, setNotes] = useState('')
   const [orderType, setOrderType] = useState('dine_in')
   const [showCharge, setShowCharge] = useState(false)
@@ -1607,8 +1633,10 @@ export default function POSOrder() {
 
   const categories = ['All', ...new Set(menuItems.map(i => i.category))]
   const availableCount = menuItems.filter(item => item.available).length
+  const noCategorySelected = !activeCategory
 
   const filtered = menuItems.filter(item => {
+    if (!activeCategory) return false
     const matchCat = activeCategory === 'All' || item.category === activeCategory
     const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase())
     return matchCat && matchSearch
@@ -1637,7 +1665,7 @@ export default function POSOrder() {
   const changeQty = (lineId, delta) =>
     setCart(prev => prev.map(c => c.lineId === lineId ? { ...c, quantity: c.quantity + delta } : c).filter(c => c.quantity > 0))
 
-  const clearCart = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setDeliveryAddress(''); setNotes('') }
+  const clearCart = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setDeliveryAddress(''); setDeliveryRangeStatus('idle'); setNotes('') }
 
   const subtotal = cart.reduce((s, c) => s + c.price * c.quantity, 0)
   const tax = subtotal * TAX_RATE
@@ -1647,6 +1675,10 @@ export default function POSOrder() {
 
   const placeOrder = async (paymentMethod = 'cash') => {
     if (!cart.length) return
+    if (orderType === 'delivery' && restaurantCoords && deliveryRangeStatus !== 'in') {
+      showToast('error', deliveryRangeStatus === 'out' ? 'Delivery address is outside your range' : 'Validate the delivery address first')
+      return
+    }
     setPlacing(true)
     try {
       await ordersApi.create({
@@ -1758,14 +1790,22 @@ export default function POSOrder() {
           <div className="pos-control-card" style={{ animation: 'fadeInUp 0.3s ease 0.06s both' }}>
             <div className="pos-control-header">
               <div>
-                <h2 className="pos-section-title">{activeCategory === 'All' ? 'All Items' : activeCategory}</h2>
+                <h2 className="pos-section-title">{activeCategory ? (activeCategory === 'All' ? 'All Items' : activeCategory) : 'All Items'}</h2>
                 <p className="pos-section-subtitle">
-                  {filtered.filter(i => i.available).length} available · {filtered.length - filtered.filter(i => i.available).length > 0 ? `${filtered.length - filtered.filter(i => i.available).length} unavailable` : 'tap an item to add'}
+                  {activeCategory
+                    ? `${filtered.filter(i => i.available).length} available · ${filtered.length - filtered.filter(i => i.available).length > 0 ? `${filtered.length - filtered.filter(i => i.available).length} unavailable` : 'tap an item to add'}`
+                    : 'Select All or a category to view items'}
                 </p>
               </div>
               <div className="pos-search-wrap">
                 <SearchIcon size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
-                <input className="input" style={{ paddingLeft: 30, fontSize: 13, height: 36 }} placeholder="Search menu..." value={search} onChange={e => setSearch(e.target.value)} />
+                <input
+                  className="input"
+                  style={{ paddingLeft: 30, fontSize: 13, height: 36 }}
+                  placeholder="Search menu..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
             </div>
 
@@ -1779,7 +1819,9 @@ export default function POSOrder() {
                   return (
                     <button
                       key={cat}
-                      onClick={() => setActiveCategory(cat)}
+                      onClick={() => {
+                        setActiveCategory(cat)
+                      }}
                       title={cat}
                       className="pos-category-chip"
                       style={{
@@ -1812,10 +1854,19 @@ export default function POSOrder() {
             </div>
           </div>
 
-          <div className="pos-items-card" style={{ animation: 'fadeInUp 0.3s ease 0.09s both' }}>
+          <div className={`pos-items-card ${noCategorySelected ? 'pos-no-category-selected' : ''}`} style={{ animation: 'fadeInUp 0.3s ease 0.09s both' }}>
+            {noCategorySelected && !loading && (
+              <div className="pos-mobile-all-placeholder">
+                <div className="pos-mobile-all-placeholder-icon">🍴</div>
+                <div>
+                  <h3>Choose what to show</h3>
+                  <p>Tap All to open every item, or choose a category above.</p>
+                </div>
+              </div>
+            )}
             {loading ? (
               <div className="flex items-center justify-center py-20"><SpinnerIcon size={24} /></div>
-            ) : filtered.length === 0 ? (
+            ) : noCategorySelected ? null : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div style={{ fontSize: 40, marginBottom: 8 }}>🔍</div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--text-2)' }}>No items found</p>
@@ -1898,6 +1949,7 @@ export default function POSOrder() {
                 onChange={setDeliveryAddress}
                 restaurantCoords={restaurantCoords}
                 restaurantRadius={restaurantRadius}
+                onRangeChange={setDeliveryRangeStatus}
               />
             )}
           </div>
@@ -1934,8 +1986,9 @@ export default function POSOrder() {
               const missingName    = orderType === 'delivery' && !customerName.trim()
               const missingPhone   = orderType === 'delivery' && !customerPhone.trim()
               const missingAddress = orderType === 'delivery' && !deliveryAddress.trim()
+              const needsAddressValidation = orderType === 'delivery' && restaurantCoords && deliveryAddress.trim() && deliveryRangeStatus !== 'in'
               const deliveryMissing = missingName || missingPhone || missingAddress
-              const canCharge = cart.length > 0 && !deliveryMissing
+              const canCharge = cart.length > 0 && !deliveryMissing && !needsAddressValidation
 
               const missingLabel = missingName && missingPhone && missingAddress
                 ? '⚠ Name, phone & address required'
@@ -1950,6 +2003,9 @@ export default function POSOrder() {
                         : missingPhone
                           ? '⚠ Phone number required'
                           : '⚠ Delivery address required'
+              const validationLabel = deliveryRangeStatus === 'out'
+                ? `⚠ Outside ${restaurantRadius} mi delivery radius`
+                : '⚠ Validate delivery address'
 
               return (
                 <button
@@ -1973,6 +2029,8 @@ export default function POSOrder() {
                     ? 'Add items to order'
                     : deliveryMissing
                       ? missingLabel
+                      : needsAddressValidation
+                        ? validationLabel
                       : <>💳 Charge · ${total.toFixed(2)}</>
                   }
                 </button>

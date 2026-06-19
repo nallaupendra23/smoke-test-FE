@@ -140,9 +140,38 @@ function RuleRow({ title, description, checked, onChange }) {
   )
 }
 
+function MobileAccordionSection({ id, title, summary, open, onToggle, children, className = '', style = {} }) {
+  return (
+    <section className={`agent-mobile-section ${open ? 'is-open' : ''} ${className}`} style={style}>
+      <button
+        type="button"
+        className="agent-mobile-section-toggle"
+        onClick={() => onToggle(id)}
+        aria-expanded={open}
+      >
+        <span>
+          <span className="agent-mobile-section-title">{title}</span>
+          {summary && <span className="agent-mobile-section-summary">{summary}</span>}
+        </span>
+        <span className="agent-mobile-section-control" aria-hidden="true">{open ? '−' : '+'}</span>
+      </button>
+      <div className="agent-mobile-section-content">
+        {children}
+      </div>
+    </section>
+  )
+}
+
 export default function AgentSettings() {
   const [settings, setSettings] = useState(DEFAULT_AGENT)
   const [saved, setSaved] = useState(false)
+  const [openSections, setOpenSections] = useState({
+    profile: true,
+    conversation: false,
+    order: false,
+    scripts: false,
+    rules: false,
+  })
 
   useEffect(() => {
     try {
@@ -152,6 +181,7 @@ export default function AgentSettings() {
   }, [])
 
   const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
+  const toggleSection = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))
 
   const save = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
@@ -180,7 +210,12 @@ export default function AgentSettings() {
           </button>
         </PageHeader>
 
-        <section
+        <MobileAccordionSection
+          id="profile"
+          title="Current Agent Profile"
+          summary={`${settings.personality} · ${settings.voice} · ${settings.pace}`}
+          open={openSections.profile}
+          onToggle={toggleSection}
           className="card"
           style={{
             padding: 22,
@@ -211,7 +246,7 @@ export default function AgentSettings() {
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <div className="agent-profile-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
             {[
               ['Personality', settings.personality],
               ['Voice', settings.voice],
@@ -234,11 +269,19 @@ export default function AgentSettings() {
               </div>
             ))}
           </div>
-        </section>
+        </MobileAccordionSection>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'stretch' }}>
+        <div className="agent-settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'stretch' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <section className="card" style={{ padding: 22 }}>
+            <MobileAccordionSection
+              id="conversation"
+              title="Conversation Style"
+              summary={`${settings.personality} · ${settings.language}`}
+              open={openSections.conversation}
+              onToggle={toggleSection}
+              className="card"
+              style={{ padding: 22 }}
+            >
               <h2 style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-1)', margin: '0 0 18px' }}>Conversation Style</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                 <OptionGroup label="Personality" value={settings.personality} options={OPTIONS.personality} onChange={value => update('personality', value)} />
@@ -246,19 +289,35 @@ export default function AgentSettings() {
                 <OptionGroup label="Pace" value={settings.pace} options={OPTIONS.pace} onChange={value => update('pace', value)} />
                 <OptionGroup label="Language" value={settings.language} options={OPTIONS.language} onChange={value => update('language', value)} />
               </div>
-            </section>
+            </MobileAccordionSection>
 
-            <section className="card" style={{ padding: 22, flex: 1 }}>
+            <MobileAccordionSection
+              id="order"
+              title="Order Handling"
+              summary={settings.orderStyle.replaceAll('_', ' ')}
+              open={openSections.order}
+              onToggle={toggleSection}
+              className="card"
+              style={{ padding: 22, flex: 1 }}
+            >
               <h2 style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-1)', margin: '0 0 18px' }}>Order Handling</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                 <OptionGroup label="Confirmation Flow" value={settings.orderStyle} options={OPTIONS.orderStyle} onChange={value => update('orderStyle', value)} />
                 <OptionGroup label="Fallback Behavior" value={settings.fallback} options={OPTIONS.fallback} onChange={value => update('fallback', value)} />
               </div>
-            </section>
+            </MobileAccordionSection>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <section className="card" style={{ padding: 22 }}>
+            <MobileAccordionSection
+              id="scripts"
+              title="Scripts"
+              summary="Greeting · closing · instructions"
+              open={openSections.scripts}
+              onToggle={toggleSection}
+              className="card"
+              style={{ padding: 22 }}
+            >
               <h2 style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-1)', margin: '0 0 14px' }}>Scripts</h2>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-3)', marginBottom: 7 }}>Greeting</label>
               <textarea className="input" rows={3} value={settings.greeting} onChange={e => update('greeting', e.target.value)} style={{ resize: 'vertical', marginBottom: 14 }} />
@@ -266,9 +325,17 @@ export default function AgentSettings() {
               <textarea className="input" rows={3} value={settings.closing} onChange={e => update('closing', e.target.value)} style={{ resize: 'vertical', marginBottom: 14 }} />
               <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-3)', marginBottom: 7 }}>Special Instructions</label>
               <textarea className="input" rows={5} value={settings.customNotes} onChange={e => update('customNotes', e.target.value)} placeholder="Example: Always mention lunch specials before noon. Never promise delivery times." style={{ resize: 'vertical' }} />
-            </section>
+            </MobileAccordionSection>
 
-            <section className="card" style={{ padding: 22, flex: 1 }}>
+            <MobileAccordionSection
+              id="rules"
+              title="Behavior Rules"
+              summary="Add-ons · allergies · SMS"
+              open={openSections.rules}
+              onToggle={toggleSection}
+              className="card"
+              style={{ padding: 22, flex: 1 }}
+            >
               <h2 style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-1)', margin: '0 0 4px' }}>Behavior Rules</h2>
               <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 0 8px' }}>Fine tune what the AI should do during live calls.</p>
               <div>
@@ -277,7 +344,7 @@ export default function AgentSettings() {
                 <RuleRow title="Repeat order before checkout" description="Read back the full order so the customer can correct mistakes." checked={settings.repeatOrder} onChange={value => update('repeatOrder', value)} />
                 <RuleRow title="Send SMS summary" description="Send a customer-facing order summary when a phone number is available." checked={settings.smsSummary} onChange={value => update('smsSummary', value)} />
               </div>
-            </section>
+            </MobileAccordionSection>
           </div>
         </div>
       </div>

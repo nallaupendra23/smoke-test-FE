@@ -59,7 +59,7 @@ export default function Signup() {
 
   return (
     <main
-      className="relative h-screen overflow-hidden"
+      className="relative min-h-screen overflow-y-auto overflow-x-hidden"
       style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
     >
       <img
@@ -83,7 +83,7 @@ export default function Signup() {
         }}
       />
 
-      <section className="relative z-10 flex h-full items-start px-5 pb-4 pt-[clamp(1.75rem,3.4vh,3.1rem)] sm:px-8 lg:px-16">
+      <section className="relative z-10 flex min-h-screen items-start px-5 pb-6 pt-[clamp(1.75rem,3.4vh,3.1rem)] sm:px-8 lg:px-16">
         <div className="w-full max-w-[430px] lg:ml-4">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[#c83b22] shadow-[0_10px_28px_rgba(200,59,34,0.36)]">

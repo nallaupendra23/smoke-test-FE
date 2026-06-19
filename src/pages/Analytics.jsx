@@ -447,7 +447,7 @@ export default function Analytics() {
             MAIN CALL VOLUME CARD
         ════════════════════════════════════════ */}
         {(loading || callData) && (
-          <div className="card" style={{ padding: '28px 32px', marginBottom: 20 }}>
+          <div className="card analytics-call-volume-card" style={{ padding: '28px 32px', marginBottom: 20 }}>
             {loading ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -464,8 +464,8 @@ export default function Analytics() {
               </div>
             ) : (
               <>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-                  <div>
+                <div className="analytics-call-volume-summary" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                  <div className="analytics-call-volume-primary">
                     <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 6, margin: '0 0 6px' }}>
                       Call Volume — last {days} days
                     </p>
@@ -476,7 +476,7 @@ export default function Analytics() {
                       calls received via AI phone line
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="analytics-call-volume-rate" style={{ textAlign: 'right' }}>
                     <div style={{ fontFamily: 'Noto Serif, Georgia, serif', fontSize: 30, fontWeight: 700, color: '#aa301a', lineHeight: 1 }}>
                       {completionRate}%
                     </div>
@@ -494,30 +494,32 @@ export default function Analytics() {
                     <stop offset="95%" stopColor="#aa301a" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={callData.calls_by_date} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="callAreaFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%"  stopColor="#aa301a" stopOpacity={0.18}/>
-                        <stop offset="100%" stopColor="#aa301a" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 0" stroke="var(--surface-3)" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      name="Calls"
-                      stroke="#aa301a"
-                      strokeWidth={2.5}
-                      fill="url(#callAreaFill)"
-                      dot={{ fill: '#aa301a', strokeWidth: 0, r: 3 }}
-                      activeDot={{ r: 5, fill: '#aa301a', strokeWidth: 2, stroke: '#fff' }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <div className="analytics-call-volume-chart">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={callData.calls_by_date} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="callAreaFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%"  stopColor="#aa301a" stopOpacity={0.18}/>
+                          <stop offset="100%" stopColor="#aa301a" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 0" stroke="var(--surface-3)" vertical={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: '#938f99' }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="count"
+                        name="Calls"
+                        stroke="#aa301a"
+                        strokeWidth={2.5}
+                        fill="url(#callAreaFill)"
+                        dot={{ fill: '#aa301a', strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5, fill: '#aa301a', strokeWidth: 2, stroke: '#fff' }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </>
             )}
           </div>
@@ -793,9 +795,9 @@ export default function Analytics() {
         {/* ════════════════════════════════════════
             DOWNLOAD REPORT
         ════════════════════════════════════════ */}
-        <div className="card" style={{ background: 'linear-gradient(135deg, #e8eef8 0%, #eef3fa 100%)', padding: '24px 28px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1 }}>
+        <div className="card analytics-report-card" style={{ background: 'linear-gradient(135deg, #e8eef8 0%, #eef3fa 100%)', padding: '24px 28px' }}>
+          <div className="analytics-report-layout" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+            <div className="analytics-report-copy" style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <DownloadIcon size={15} />
                 <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)' }}>Download Business Report</span>
@@ -805,7 +807,7 @@ export default function Analytics() {
               </p>
 
               {/* Period pills */}
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div className="analytics-report-periods" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
                 {PERIODS.map(p => (
                   <button
                     key={p.value}
@@ -829,7 +831,7 @@ export default function Analytics() {
                 <div style={{ fontSize: 11, fontWeight: 800, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                   Include in PDF
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 10px', maxWidth: 520 }}>
+                <div className="analytics-report-options" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 10px', maxWidth: 520 }}>
                   {EXPORT_SECTIONS.map(section => {
                     const active = exportSections[section.key]
                     return (
@@ -866,7 +868,7 @@ export default function Analytics() {
             </div>
 
             {/* Download CTA */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0, paddingTop: 4 }}>
+            <div className="analytics-report-cta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0, paddingTop: 4 }}>
               <button
                 onClick={handleDownload}
                 disabled={downloading || !Object.values(exportSections).some(Boolean)}

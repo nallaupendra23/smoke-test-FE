@@ -1041,7 +1041,7 @@ export default function Locations() {
 
                   {/* Summary stat strip */}
                   {locations.length > 0 && (
-                    <div className="grid gap-3" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}>
+                    <div className="grid gap-3 locations-stat-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}>
                       <StatCard label="Total Locations" value={locations.length} />
                       <StatCard
                         label={`Revenue (${PERIOD_OPTIONS.find(p=>p.value===analyticsDays)?.label})`}

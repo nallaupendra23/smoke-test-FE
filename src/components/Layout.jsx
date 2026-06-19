@@ -143,6 +143,7 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const { locations } = useLocationCtx()
   const hasMultipleLocations = locations?.length > 1
+  const currentPage = navItems.find((item) => item.path === location.pathname)
 
   const handleLogout = () => {
     logout()
@@ -153,6 +154,21 @@ export default function Layout({ children }) {
   const initials = owner?.restaurant_name
     ? owner.restaurant_name.slice(0, 2).toUpperCase()
     : 'AI'
+
+  const renderNavItem = (item, className) => {
+    const Icon = item.icon
+    const active = location.pathname === item.path
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        className={`${className} ${active ? 'active' : ''}`}
+      >
+        <Icon size={16} />
+        <span>{item.label}</span>
+      </Link>
+    )
+  }
 
   return (
     <div className="app-shell" style={{ background: 'var(--bg)' }}>
@@ -168,20 +184,7 @@ export default function Layout({ children }) {
         </div>
 
         <nav className="app-sidebar-nav" aria-label="Primary navigation">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const active = location.pathname === item.path
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`app-sidebar-item ${active ? 'active' : ''}`}
-              >
-                <Icon size={16} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
+          {navItems.map((item) => renderNavItem(item, 'app-sidebar-item'))}
         </nav>
 
         <div className="app-sidebar-footer">
@@ -227,6 +230,45 @@ export default function Layout({ children }) {
       </aside>
 
       <div className="app-content-shell">
+        <header className="top-app-bar">
+          <Link to="/dashboard" className="top-brand" aria-label="Go to dashboard">
+            <span className="top-brand-icon">
+              <PhoneIcon size={15} className="text-white" />
+            </span>
+            <span className="min-w-0">
+              <span className="top-brand-title">RingZ.ai</span>
+              <span className="top-brand-subtitle">{currentPage?.label || 'Restaurant voice agent'}</span>
+            </span>
+          </Link>
+
+          <div className="top-actions">
+            <Link
+              to="/account"
+              className={`top-account ${location.pathname === '/account' ? 'active' : ''}`}
+              title="Account settings"
+            >
+              <span className="top-account-avatar">{initials}</span>
+              <span className="top-account-copy">
+                <span className="top-account-name">{owner?.restaurant_name}</span>
+                <span className="top-account-email">{owner?.email}</span>
+              </span>
+            </Link>
+            <button onClick={handleLogout} className="top-icon-button" title="Sign out">
+              <LogoutIcon size={15} />
+            </button>
+          </div>
+
+          {hasMultipleLocations && (
+            <div className="top-location-row">
+              <LocationSwitcher variant="surface" />
+            </div>
+          )}
+
+          <nav className="top-nav" aria-label="Primary navigation">
+            {navItems.map((item) => renderNavItem(item, 'top-nav-item'))}
+          </nav>
+        </header>
+
         <main className="app-main">
           <div className="page-enter">
             {children}
