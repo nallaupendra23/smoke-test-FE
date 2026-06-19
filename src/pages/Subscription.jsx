@@ -298,18 +298,40 @@ function UsageCard({ used, limit, label, subtitle, color = '#2563eb', icon }) {
 /* ══════════════════════════════════════════════════════════
    PLAN CARD
 ══════════════════════════════════════════════════════════ */
-function PlanCard({ planKey, plan, isCurrent, onSelect, changing, index }) {
+function PlanCard({ planKey, plan, isCurrent, onSelect, changing, index, mobileExpanded = false, onMobileToggle }) {
   const theme = PLAN_THEMES[planKey] || PLAN_THEMES.essential
   const isPopular = plan.popular
   const [hovered, setHovered] = useState(false)
 
   return (
     <div
-      className="relative flex flex-col"
+      className={`subscription-plan-card relative flex flex-col ${mobileExpanded ? 'is-expanded' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{ animation: `fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) ${index * 100}ms both` }}
     >
+      <button
+        type="button"
+        className="subscription-plan-mobile-toggle"
+        onClick={onMobileToggle}
+        aria-expanded={mobileExpanded}
+        style={{
+          '--plan-accent': theme.accent,
+          '--plan-accent-light': theme.accentLight,
+          '--plan-ring': theme.ring,
+        }}
+      >
+        <span className="subscription-plan-mobile-icon">{PLAN_ICONS[planKey]}</span>
+        <span className="subscription-plan-mobile-copy">
+          <span className="subscription-plan-mobile-name">{plan.name}</span>
+          <span className="subscription-plan-mobile-meta">${plan.price}/mo · {theme.label}</span>
+        </span>
+        {isCurrent && <span className="subscription-plan-mobile-badge">Active</span>}
+        {isPopular && !isCurrent && <span className="subscription-plan-mobile-badge">Popular</span>}
+        <span className="subscription-plan-mobile-chevron" aria-hidden="true">{mobileExpanded ? '−' : '+'}</span>
+      </button>
+
+      <div className="subscription-plan-content">
       <div style={{ height: 32, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: 10 }}>
         {isPopular && (
           <span style={{
@@ -487,6 +509,7 @@ function PlanCard({ planKey, plan, isCurrent, onSelect, changing, index }) {
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
@@ -727,6 +750,7 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
 
   return createPortal(
     <div
+      className="subscription-details-overlay"
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
@@ -736,6 +760,7 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
       }}
     >
       <div
+        className="subscription-details-modal"
         onClick={e => e.stopPropagation()}
         style={{
           width: 'min(920px, 100%)',
@@ -792,11 +817,11 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
           </button>
         </div>
 
-        <div style={{ padding: 28 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
-            <div className="card" style={{ padding: 18 }}>
+        <div className="subscription-details-body" style={{ padding: 28 }}>
+          <div className="subscription-details-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
+            <div className="card subscription-details-usage-card" style={{ padding: 18 }}>
               <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Plan usage</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="subscription-details-metric-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {[
                   ['AI calls', `${usage.calls_used || 0} / ${usage.calls_limit === -1 ? '∞' : usage.calls_limit || 0}`],
                   ['Documents', `${usage.documents_used || 0} / ${usage.documents_limit === -1 ? '∞' : usage.documents_limit || 0}`],
@@ -811,9 +836,9 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
               </div>
             </div>
 
-            <div className="card" style={{ padding: 18 }}>
+            <div className="card subscription-details-limits-card" style={{ padding: 18 }}>
               <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Included limits</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div className="subscription-details-limits-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {limitItems.map(([label, value]) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{label}</span>
@@ -824,7 +849,7 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
             </div>
           </div>
 
-          <div className="card" style={{ padding: 18 }}>
+          <div className="card subscription-details-compare-card" style={{ padding: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 900 }}>Compare plans</div>
@@ -832,7 +857,7 @@ function PlanDetailsModal({ currentPlan, plans, billing, usage, onClose, onSelec
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <div className="subscription-details-compare-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {options.map(([key, plan]) => {
                 const optionTheme = PLAN_THEMES[key] || PLAN_THEMES.essential
                 const selected = key === currentPlan
@@ -916,6 +941,7 @@ export default function Subscription() {
   const [otpModal, setOtpModal] = useState(null)
   const [otpVerifying, setOtpVerifying]   = useState(false)
   const [showPlanDetails, setShowPlanDetails] = useState(false)
+  const [expandedMobilePlan, setExpandedMobilePlan] = useState(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -1007,6 +1033,7 @@ export default function Subscription() {
   const usage        = subscription?.usage || {}
   const currentTheme = PLAN_THEMES[currentPlan] || PLAN_THEMES.essential
   const displayPlans = orderedDisplayPlans(plans)
+  const openMobilePlan = expandedMobilePlan === '__none' ? null : (expandedMobilePlan || currentPlan)
 
   return (
     <Layout>
@@ -1069,7 +1096,7 @@ export default function Subscription() {
         )}
 
         {/* ══ PLAN CARDS ═══════════════════════════════════════ */}
-        <div style={{
+        <div className="subscription-plan-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 18, marginBottom: 20, alignItems: 'stretch',
           animation: 'fadeInUp 0.5s ease 0.06s both',
@@ -1081,12 +1108,14 @@ export default function Subscription() {
               onSelect={handlePlanChange}
               changing={changing === key}
               index={index}
+              mobileExpanded={openMobilePlan === key}
+              onMobileToggle={() => setExpandedMobilePlan(openMobilePlan === key ? '__none' : key)}
             />
           ))}
         </div>
 
         {/* ══ TRUST STRIP ══════════════════════════════════════ */}
-        <div style={{
+        <div className="subscription-trust-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
           borderRadius: 18,
           background: 'var(--card-bg)',
@@ -1116,7 +1145,7 @@ export default function Subscription() {
         </div>
 
         {/* ══ USAGE + BILLING (2-col) ═══════════════════════════ */}
-        <div style={{
+        <div className="subscription-detail-grid" style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr',
           gap: 20, marginBottom: 36,
           alignItems: 'stretch',

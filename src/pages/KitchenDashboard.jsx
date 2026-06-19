@@ -888,7 +888,7 @@ export default function KitchenDashboard() {
           <>
             {/* Stat cards */}
             <div
-              className="grid grid-cols-3 gap-4 mb-8"
+              className="dashboard-stats-grid grid grid-cols-3 gap-4 mb-8"
               style={{ animation: 'fadeInUp 0.4s ease 0.05s both' }}
             >
               {loading ? (

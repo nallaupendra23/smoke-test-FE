@@ -456,6 +456,7 @@ export default function MenuManager() {
 
   useEffect(() => {
     if (!activeCategory) return
+    if (window.innerWidth <= 768) return
     window.setTimeout(() => {
       detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 80)
@@ -544,9 +545,85 @@ export default function MenuManager() {
   }
 
   const selectCategory = (category) => {
-    setActiveCategory(category)
+    setActiveCategory(prev => prev === category ? null : category)
     setSearch('')
   }
+
+  const renderCategoryDetail = (mode = 'desktop') => (
+    <div
+      ref={mode === 'desktop' ? detailRef : undefined}
+      className={mode === 'mobile' ? 'menu-mobile-category-detail' : 'menu-desktop-category-detail'}
+      style={{ animation: 'fadeInUp 0.3s ease both', marginTop: mode === 'mobile' ? 0 : 28 }}
+    >
+      {/* Search bar */}
+      <div className="menu-category-detail-tools flex items-center justify-between gap-3 mb-4">
+        <div className="relative" style={{ maxWidth: 320, flex: '1 1 320px' }}>
+          <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
+          <input
+            className="input"
+            style={{ paddingLeft: 32, fontSize: 13 }}
+            placeholder={`Search in ${activeCategory}...`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={() => { setActiveCategory(null); setSearch('') }}
+          className="btn-secondary"
+          style={{ padding: '9px 14px', borderRadius: 12 }}
+        >
+          Clear selection
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-16"><SpinnerIcon size={24} /></div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-2xl py-16 text-center" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-3)' }}>
+            {search ? 'No items match your search' : `No items in ${activeCategory} yet`}
+          </p>
+          {!search && (
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-2 mt-4 py-2 px-4 rounded-xl text-sm font-semibold text-white"
+              style={{ background: 'linear-gradient(145deg, #cb4830, #aa301a)' }}
+            >
+              <PlusIcon size={13} /> Add to {activeCategory}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          {/* Category sub-header */}
+          <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: `${getCategoryColor(activeCategory)}08` }}>
+            <div className="flex items-center gap-2">
+              <span style={{ fontSize: 16 }}>{getCategoryIcon(activeCategory)}</span>
+              <span className="font-bold text-sm" style={{ color: 'var(--text-1)' }}>{activeCategory}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--border)', color: 'var(--text-3)' }}>
+                {filtered.length} item{filtered.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
+              {filtered.filter(i => i.available).length} available
+            </span>
+          </div>
+
+          {filtered.map(item => (
+            <MenuItemRow
+              key={item.id}
+              item={item}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggle={handleToggle}
+              onPriceUpdate={handlePriceUpdate}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <Layout>
@@ -688,11 +765,13 @@ export default function MenuManager() {
               const availCount = catItems.filter(i => i.available).length
               const color = getCategoryColor(cat)
               return (
+                <div key={cat} className="menu-category-accordion-item">
                 <button
                   key={cat}
                   onClick={() => selectCategory(cat)}
                   className="text-left rounded-2xl overflow-hidden transition-all duration-200 group"
                   style={{
+                    width: '100%',
                     background: 'var(--card-bg)',
                     border: selected ? `2px solid ${color}` : '1px solid var(--border)',
                     boxShadow: selected ? `0 12px 28px ${color}18` : 'var(--shadow-sm)',
@@ -741,84 +820,15 @@ export default function MenuManager() {
                   {/* Bottom accent bar */}
                   <div style={{ height: 3, background: color, opacity: selected ? 1 : 0.7 }} />
                 </button>
+                {selected && renderCategoryDetail('mobile')}
+                </div>
               )
             })}
           </div>
         )}
 
         {/* ══════ CATEGORY DETAIL (inline) ══════ */}
-        {activeCategory && (
-          <div ref={detailRef} style={{ animation: 'fadeInUp 0.3s ease both', marginTop: 28 }}>
-
-            {/* Search bar */}
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div className="relative" style={{ maxWidth: 320, flex: '1 1 320px' }}>
-                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-3)' }} />
-                <input
-                  className="input"
-                  style={{ paddingLeft: 32, fontSize: 13 }}
-                  placeholder={`Search in ${activeCategory}...`}
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-              </div>
-              <button
-                onClick={() => { setActiveCategory(null); setSearch('') }}
-                className="btn-secondary"
-                style={{ padding: '9px 14px', borderRadius: 12 }}
-              >
-                Clear selection
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-16"><SpinnerIcon size={24} /></div>
-            ) : filtered.length === 0 ? (
-              <div className="rounded-2xl py-16 text-center" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text-3)' }}>
-                  {search ? 'No items match your search' : `No items in ${activeCategory} yet`}
-                </p>
-                {!search && (
-                  <button
-                    onClick={openAddModal}
-                    className="inline-flex items-center gap-2 mt-4 py-2 px-4 rounded-xl text-sm font-semibold text-white"
-                    style={{ background: 'linear-gradient(145deg, #cb4830, #aa301a)' }}
-                  >
-                    <PlusIcon size={13} /> Add to {activeCategory}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                {/* Category sub-header */}
-                <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: `${getCategoryColor(activeCategory)}08` }}>
-                  <div className="flex items-center gap-2">
-                    <span style={{ fontSize: 16 }}>{getCategoryIcon(activeCategory)}</span>
-                    <span className="font-bold text-sm" style={{ color: 'var(--text-1)' }}>{activeCategory}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--border)', color: 'var(--text-3)' }}>
-                      {filtered.length} item{filtered.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
-                    {filtered.filter(i => i.available).length} available
-                  </span>
-                </div>
-
-                {filtered.map(item => (
-                  <MenuItemRow
-                    key={item.id}
-                    item={item}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onToggle={handleToggle}
-                    onPriceUpdate={handlePriceUpdate}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {activeCategory && renderCategoryDetail('desktop')}
 
         {/* Category suggestions datalist */}
         <datalist id="category-suggestions">
