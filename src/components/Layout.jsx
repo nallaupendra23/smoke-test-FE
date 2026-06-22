@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
+import { planHasPOS } from '../config/planFeatures'
 import {
   DashboardIcon, OrdersIcon, MenuIcon, KnowledgeIcon,
   SettingsIcon, AnalyticsIcon, LogoutIcon, PhoneIcon, CreditCardIcon, AgentIcon,
@@ -18,16 +19,27 @@ function ManagerIcon({ size = 16 }) {
   )
 }
 
-const navItems = [
-  { path: '/dashboard',  label: 'Dashboard',     icon: DashboardIcon  },
-  { path: '/pos',        label: 'POS Terminal',  icon: OrdersIcon     },
-  { path: '/menu',       label: 'Menu',           icon: MenuIcon       },
-  { path: '/agent',      label: 'Agent',          icon: AgentIcon      },
-  { path: '/documents',  label: 'Knowledge Base', icon: KnowledgeIcon  },
-  { path: '/analytics',  label: 'Analytics',      icon: AnalyticsIcon  },
-  { path: '/locations',  label: 'Locations',      icon: LocationsIcon  },
-  { path: '/subscription', label: 'Subscription', icon: CreditCardIcon },
-  { path: '/settings',   label: 'Settings',       icon: SettingsIcon   },
+function POSIntegrationIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2"/>
+      <line x1="2" y1="10" x2="22" y2="10"/>
+      <line x1="7" y1="15" x2="7.01" y2="15"/>
+      <line x1="11" y1="15" x2="13" y2="15"/>
+    </svg>
+  )
+}
+
+const BASE_NAV_ITEMS = [
+  { path: '/dashboard',    label: 'Dashboard',        icon: DashboardIcon       },
+  { path: '/pos',          label: 'POS Terminal',     icon: OrdersIcon          },
+  { path: '/menu',         label: 'Menu',             icon: MenuIcon            },
+  { path: '/agent',        label: 'Agent',            icon: AgentIcon           },
+  { path: '/documents',    label: 'Knowledge Base',   icon: KnowledgeIcon       },
+  { path: '/analytics',    label: 'Analytics',        icon: AnalyticsIcon       },
+  { path: '/locations',    label: 'Locations',        icon: LocationsIcon       },
+  { path: '/subscription', label: 'Subscription',     icon: CreditCardIcon      },
+  { path: '/settings',     label: 'Settings',         icon: SettingsIcon        },
 ]
 
 /* ── Inline icons ─────────────────────────────────────────────────── */
@@ -143,6 +155,15 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const { locations } = useLocationCtx()
   const hasMultipleLocations = locations?.length > 1
+
+  const navItems = planHasPOS(owner?.plan)
+    ? [
+        ...BASE_NAV_ITEMS.slice(0, 2),
+        { path: '/pos/integration', label: 'POS Integration', icon: POSIntegrationIcon },
+        ...BASE_NAV_ITEMS.slice(2),
+      ]
+    : BASE_NAV_ITEMS
+
   const currentPage = navItems.find((item) => item.path === location.pathname)
 
   const handleLogout = () => {
