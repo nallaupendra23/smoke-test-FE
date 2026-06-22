@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { authApi } from '../services/api'
 
 const AuthContext = createContext(null)
@@ -21,6 +21,23 @@ function readStoredOwner() {
 export function AuthProvider({ children }) {
   const [owner, setOwner] = useState(readStoredOwner)
   const [loading, setLoading] = useState(false)
+
+  // On mount, refresh owner data from the server so plan/profile changes
+  // made externally (e.g. admin console) are reflected without re-login.
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    authApi.me().then(res => {
+      const fresh = res.data
+      localStorage.setItem('owner', JSON.stringify(fresh))
+      setOwner(fresh)
+    }).catch(() => {
+      // Token expired or invalid — clear session
+      localStorage.removeItem('token')
+      localStorage.removeItem('owner')
+      setOwner(null)
+    })
+  }, [])
 
   /** Step 1: validate input, send OTP to email + phone.
    *  Returns { message, otp?, dev_mode? } — does NOT log the user in. */
