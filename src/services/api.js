@@ -184,6 +184,13 @@ export const managerApi = {
   updateAssignments: (staffId, restaurantIds) => api.put(`/staff/${staffId}/assignments`, { restaurant_ids: restaurantIds }),
 }
 
+// POS Integration — connections managed by the pos-gateway service
+export const posApi = {
+  list:       (restaurantId) => api.get(`/pos/connections/${restaurantId}`),
+  connectUrl: (restaurantId, provider) => `/api/pos/oauth/${provider}/connect?restaurant_id=${restaurantId}`,
+  disconnect: (restaurantId, provider) => api.post(`/pos/connections/${restaurantId}/${provider}/disconnect`),
+}
+
 // Unwrap helpers — backend routes return either a raw value OR {success, message, data}.
 // unwrap() returns the inner payload; unwrapList() guarantees an array.
 export const unwrap = (res) => (res?.data && Object.prototype.hasOwnProperty.call(res.data, 'data'))
