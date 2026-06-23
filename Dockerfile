@@ -10,7 +10,7 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
-# ── Runtime ───────────────────────────────────────────────────────────────────
+# ── Runtime runtime ───────────────────────────────────────────────────────────────────
 FROM nginx:1.27-alpine AS runtime
 
 # Drop root — nginx worker processes run as the existing 'nginx' user
