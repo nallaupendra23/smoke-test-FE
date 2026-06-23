@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader'
 import { SettingsIcon } from '../components/Icons'
 import { restaurantApi, authApi, subscriptionApi, locationsApi, unwrap } from '../services/api'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
+import POSIntegrationPanel from './POSIntegration'
 
 /* ── Constants ── */
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -736,6 +737,7 @@ export default function Settings() {
     { id: 'info', label: 'General' },
     { id: 'hours', label: 'Hours' },
     { id: 'team', label: 'Team' },
+    { id: 'integrations', label: 'Integrations' },
   ]
   const openDaysCount = DAYS.filter(d => !hours[d]?.closed).length
   const planLabel = currentPlan ? currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) : 'Basic'
@@ -1047,6 +1049,13 @@ export default function Settings() {
           </div>
         )}
 
+        {/* ════ TAB: Integrations ════ */}
+        {activeTab === 'integrations' && (
+          <div style={{ animation: 'fadeInUp 0.3s ease both', paddingTop: 4 }}>
+            <POSIntegrationPanel />
+          </div>
+        )}
+
         {/* ════ TAB: Account ════ */}
         {activeTab === 'account' && (() => {
           const planTheme = ({
@@ -1319,8 +1328,8 @@ export default function Settings() {
             </div>
           )
         })()}
-        {/* Save button (not on Account or Email tab) */}
-        {activeTab !== 'account' && (
+        {/* Save button (not on Account or Integrations tab) */}
+        {activeTab !== 'account' && activeTab !== 'integrations' && (
           <div className="settings-save-bar">
             <div className="settings-save-copy">
               <div className="settings-save-title">Restaurant settings</div>
