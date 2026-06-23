@@ -52,7 +52,22 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('info', {}\\)\\)\")",
       "Bash(/Users/surajgariga/Documents/Mayank_Working_on_BE/services/menu-order-service/venv/bin/python -c ' *)",
       "Bash(PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d menu_order_service -c \"SELECT DISTINCT availability FROM menu_items;\")",
-      "Bash(PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d pos-gateway -c \"\\\\d restaurant_pos_connections\")"
+      "Bash(PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d pos-gateway -c \"\\\\d restaurant_pos_connections\")",
+      "Bash(awk '{print $9}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(t['public_url'], '->', t['config']['addr']\\) for t in d.get\\('tunnels',[]\\)]\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/menu_order_service -c \"SELECT availability, COUNT\\(*\\) FROM menu_items GROUP BY availability;\")",
+      "Bash(curl -s \"http://localhost:8003/api/menu/7a0ab8e1-4f37-4ea2-a2ba-48003f5154ae\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); items=d.get\\('items',d\\) if isinstance\\(d,dict\\) else d; avail=[i for i in items if i.get\\('availability'\\)=='available']; print\\(f'Total: {len\\(items\\)}, Available: {len\\(avail\\)}'\\); print\\('Sample:', json.dumps\\(items[:2], indent=2\\)\\)\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/menu_order_service -c \"SELECT id FROM restaurants LIMIT 3;\")",
+      "Bash(curl -s \"http://localhost:8003/api/menu/0e2c5ff6-a31d-42b6-9035-ec5b059c89f3\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)[:500]\\)\")",
+      "Bash(redis-cli keys *)",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/ringai_auth -c \"SELECT id, email, restaurant_id FROM owners WHERE email='gangasuraj2127@gmail.com';\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/ringai_auth -c \"\\\\dt\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/ringai_auth -c \"SELECT o.id, o.email, r.id as restaurant_id FROM owners o LEFT JOIN restaurants r ON r.owner_id=o.id WHERE o.email='gangasuraj2127@gmail.com';\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/ringai_auth -c \"SELECT o.id, o.email, r.id as restaurant_id FROM owners o LEFT JOIN restaurants r ON r.owner_id=o.id LIMIT 5;\")",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/menu_order_service -c ' *)",
+      "Bash(psql postgresql://postgres:postgres@localhost:5432/menu_order_service -c \"SELECT id, name FROM restaurants LIMIT 5;\")"
     ]
   }
 }

@@ -462,14 +462,21 @@ export default function MenuManager() {
     }, 80)
   }, [activeCategory])
 
+  // Normalise items so every item has a truthy category and a boolean available
+  const normItems = items.map(i => ({
+    ...i,
+    category: i.category || 'Uncategorized',
+    available: i.available ?? i.availability === 'available',
+  }))
+
   // Categories
-  const categories = ['All', ...new Set(items.map(i => i.category))]
+  const categories = ['All', ...new Set(normItems.map(i => i.category))]
 
   // Unique categories for the grid
-  const uniqueCategories = [...new Set(items.map(i => i.category))].filter(Boolean)
+  const uniqueCategories = [...new Set(normItems.map(i => i.category))].filter(Boolean)
 
   // Items filtered for the detail view
-  const filtered = items.filter(item => {
+  const filtered = normItems.filter(item => {
     const matchCat = !activeCategory || item.category === activeCategory
     const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) ||
       (item.description || '').toLowerCase().includes(search.toLowerCase())
@@ -484,9 +491,9 @@ export default function MenuManager() {
   }, {})
 
   // Stats
-  const totalItems = items.length
-  const availableItems = items.filter(i => i.available).length
-  const categoriesCount = new Set(items.map(i => i.category)).size
+  const totalItems = normItems.length
+  const availableItems = normItems.filter(i => i.available).length
+  const categoriesCount = uniqueCategories.length
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -632,7 +639,7 @@ export default function MenuManager() {
         <PageHeader
           icon={MenuIcon}
           title="Menu"
-          subtitle={`${totalItems} items across ${categoriesCount} categories`}
+          subtitle={`${totalItems} item${totalItems !== 1 ? 's' : ''} across ${categoriesCount} categor${categoriesCount !== 1 ? 'ies' : 'y'}`}
           accent="var(--primary)"
           accentBg="var(--primary-light)"
         >
@@ -761,7 +768,7 @@ export default function MenuManager() {
           >
             {uniqueCategories.map(cat => {
               const selected = activeCategory === cat
-              const catItems = items.filter(i => i.category === cat)
+              const catItems = normItems.filter(i => i.category === cat)
               const availCount = catItems.filter(i => i.available).length
               const color = getCategoryColor(cat)
               return (
@@ -832,7 +839,7 @@ export default function MenuManager() {
 
         {/* Category suggestions datalist */}
         <datalist id="category-suggestions">
-          {[...new Set(items.map(i => i.category))].map(cat => (
+          {uniqueCategories.map(cat => (
             <option key={cat} value={cat} />
           ))}
         </datalist>
