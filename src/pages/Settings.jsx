@@ -5,7 +5,7 @@ import PageHeader from '../components/PageHeader'
 import { SettingsIcon } from '../components/Icons'
 import { restaurantApi, authApi, subscriptionApi, locationsApi, unwrap } from '../services/api'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
-import POSIntegrationPanel from './POSIntegration'
+import POSIntegrationPanel from '../components/POSIntegrationPanel'
 
 /* ── Constants ── */
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']

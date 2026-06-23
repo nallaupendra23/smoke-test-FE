@@ -14,7 +14,6 @@ import Subscription from './pages/Subscription'
 import Inventory from './pages/Inventory'
 import AgentSettings from './pages/AgentSettings'
 import POSOrder from './pages/POSOrder'
-import POSIntegration from './pages/POSIntegration'
 import Locations from './pages/Locations'
 import ManagerDashboard from './pages/ManagerDashboard'
 
@@ -46,7 +45,6 @@ function AppRoutes() {
       <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
       <Route path="/pos" element={<ProtectedRoute><POSOrder /></ProtectedRoute>} />
-      <Route path="/pos/integration" element={<ProtectedRoute><POSIntegration /></ProtectedRoute>} />
       <Route path="/locations" element={<ProtectedRoute><Locations /></ProtectedRoute>} />
       <Route path="/manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

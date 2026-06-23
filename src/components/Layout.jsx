@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLocation as useLocationCtx } from '../context/LocationContext'
-import { planHasPOS } from '../config/planFeatures'
 import {
   DashboardIcon, OrdersIcon, MenuIcon, KnowledgeIcon,
   SettingsIcon, AnalyticsIcon, LogoutIcon, PhoneIcon, CreditCardIcon, AgentIcon,
@@ -15,17 +14,6 @@ function ManagerIcon({ size = 16 }) {
       <line x1="8" y1="21" x2="16" y2="21"/>
       <line x1="12" y1="17" x2="12" y2="21"/>
       <polyline points="7 10 12 6 17 10"/>
-    </svg>
-  )
-}
-
-function POSIntegrationIcon({ size = 16 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="5" width="20" height="14" rx="2"/>
-      <line x1="2" y1="10" x2="22" y2="10"/>
-      <line x1="7" y1="15" x2="7.01" y2="15"/>
-      <line x1="11" y1="15" x2="13" y2="15"/>
     </svg>
   )
 }
@@ -156,13 +144,7 @@ export default function Layout({ children }) {
   const { locations } = useLocationCtx()
   const hasMultipleLocations = locations?.length > 1
 
-  const navItems = planHasPOS(owner?.plan)
-    ? [
-        ...BASE_NAV_ITEMS.slice(0, 2),
-        { path: '/pos/integration', label: 'POS Integration', icon: POSIntegrationIcon },
-        ...BASE_NAV_ITEMS.slice(2),
-      ]
-    : BASE_NAV_ITEMS
+  const navItems = BASE_NAV_ITEMS
 
   const currentPage = navItems.find((item) => item.path === location.pathname)
 

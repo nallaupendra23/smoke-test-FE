@@ -2,7 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const authApiTarget = 'http://localhost:8000'
-const appApiTarget = 'http://localhost:8003'
+const appApiTarget  = 'http://localhost:8003'
+const posApiTarget  = 'http://localhost:8004'
 
 const proxyOptions = (target, serviceName) => ({
   target,
@@ -26,6 +27,7 @@ export default defineConfig({
     proxy: {
       '/api/auth': proxyOptions(authApiTarget, 'Auth API'),
       '/api/restaurant': proxyOptions(authApiTarget, 'Restaurant API'),
+      '/api/pos': proxyOptions(posApiTarget, 'POS Gateway'),
       '/api': proxyOptions(appApiTarget, 'App API'),
     },
   },

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { posApi, restaurantApi, unwrap } from '../services/api'
 
-/* Provider presentation metadata */
 const PROVIDERS = [
   { id: 'square', name: 'Square', blurb: 'Send orders straight to your Square POS & kitchen display.' },
   { id: 'clover', name: 'Clover', blurb: 'Push orders to your Clover station.' },
@@ -9,18 +8,18 @@ const PROVIDERS = [
 ]
 
 const STATUS_META = {
-  connected:     { label: 'Connected',    color: '#16a34a', bg: 'rgba(22,163,74,0.10)' },
-  disconnected:  { label: 'Disconnected', color: '#9ca3af', bg: 'rgba(156,163,175,0.12)' },
+  connected:     { label: 'Connected',      color: '#16a34a', bg: 'rgba(22,163,74,0.10)' },
+  disconnected:  { label: 'Disconnected',   color: '#9ca3af', bg: 'rgba(156,163,175,0.12)' },
   error:         { label: 'Needs attention', color: '#dc2626', bg: 'rgba(220,38,38,0.10)' },
-  not_connected: { label: 'Not connected', color: '#9ca3af', bg: 'rgba(156,163,175,0.12)' },
+  not_connected: { label: 'Not connected',  color: '#9ca3af', bg: 'rgba(156,163,175,0.12)' },
 }
 
-export default function POSIntegration() {
+export default function POSIntegrationPanel() {
   const [restaurantId, setRestaurantId] = useState('')
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [busy, setBusy] = useState('')        // provider id mid-action
-  const [banner, setBanner] = useState(null)  // { type, text }
+  const [busy, setBusy] = useState('')
+  const [banner, setBanner] = useState(null)
 
   const load = useCallback(async (rid) => {
     try {
@@ -48,7 +47,6 @@ export default function POSIntegration() {
     })()
   }, [load])
 
-  // Surface the result when the owner returns from the OAuth redirect (?pos=&status=)
   useEffect(() => {
     const q = new URLSearchParams(window.location.search)
     const pos = q.get('pos'); const status = q.get('status')
@@ -64,7 +62,6 @@ export default function POSIntegration() {
 
   const connect = (provider) => {
     if (!restaurantId) return
-    // Full-page navigation — OAuth consent redirects to the vendor and back.
     window.location.href = posApi.connectUrl(restaurantId, provider)
   }
 
